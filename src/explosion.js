@@ -46,10 +46,7 @@ export default class Explosion {
   }
 
   update(time) {
-    if (time > this.times.end) {
-      this.dead = true;
-      return;
-    }
+    if (time > this.times.end) this.dead = true;
 
     const { modelMatrix } = this;
     this.currentSize += .005;

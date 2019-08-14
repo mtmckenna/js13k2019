@@ -43,9 +43,14 @@ export default class Missile {
     this.angle = vec3.angle([0, 1, 0], this.destination) * Math.sign(this.destination[0]);
     const explodeTime = vec3.distance(this.position, this.destination) / this.speed + launchTime;
     this.times = { start: launchTime, explode: explodeTime, end: explodeTime + 2000 };
+    this.vertices = TRAIL;
 
     this.modelMatrix = mat4.create();
-    this.vertices = TRAIL;
+    const length = vec3.length(this.destination);
+    mat4.identity(this.modelMatrix);
+    mat4.rotate(this.modelMatrix, this.modelMatrix, this.angle, [0, 0, 1]);
+    mat4.scale(this.modelMatrix, this.modelMatrix, [1, length, 1]);
+    mat4.translate(this.modelMatrix, this.modelMatrix, [0, 0.5, 0]);
   }
 
   update(time) {
@@ -57,12 +62,6 @@ export default class Missile {
   draw(time) {
     const { gl, modelMatrix, vertices, good } = this;
     const { viewMatrix, projectionMatrix } = this.game;
-
-    const length = vec3.length(this.destination);
-    mat4.identity(modelMatrix);
-    mat4.rotate(modelMatrix, modelMatrix, this.angle, [0, 0, 1]);
-    mat4.scale(modelMatrix, modelMatrix, [1, length, 1]);
-    mat4.translate(modelMatrix, modelMatrix, [0, 0.5, 0]);
 
     gl.useProgram(program);
     setPosition(gl, program, positionBuffer, vertices);

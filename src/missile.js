@@ -24,6 +24,13 @@ let positionBuffer = null;
 let uvBuffer = null;
 
 export default class Missile {
+
+  static configureProgram(gl) {
+    program = configureProgram(gl);
+    positionBuffer = gl.createBuffer();
+    uvBuffer = gl.createBuffer();
+  }
+
   constructor(game, launchTime, destination = [1.0, 2.0, 0.0], good = true) {
     this.game = game;
     this.gl = this.game.gl;
@@ -39,10 +46,6 @@ export default class Missile {
 
     this.modelMatrix = mat4.create();
     this.vertices = TRAIL;
-
-    if (!program) program = configureProgram(this.gl);
-    positionBuffer = this.gl.createBuffer();
-    uvBuffer = this.gl.createBuffer();
   }
 
   update(time) {
@@ -52,7 +55,6 @@ export default class Missile {
   }
 
   draw(time) {
-    if (time > this.times.end) return;
     const { gl, modelMatrix, vertices, good } = this;
     const { viewMatrix, projectionMatrix } = this.game;
 

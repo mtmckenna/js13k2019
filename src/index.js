@@ -9,6 +9,7 @@ import {
 } from "./webgl-helpers";
 import { UNIFORM_NAMES } from "./models";
 import Missile from "./missile";
+import Explosion from "./explosion";
 
 import "./index.css";
 
@@ -19,6 +20,10 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const gl = canvas.getContext("webgl", { premultipliedAlpha: false });
+
+// https://www.khronos.org/webgl/wiki/HandlingContextLost
+canvas.addEventListener("webglcontextlost", (event) => event.preventDefault(), false);
+canvas.addEventListener("webglcontextrestored", () => configurePrograms(gl), false);
 
 import VERTEX_SHADER from "./shaders/vertex.glsl";
 import DOT_FRAGMENT_SHADER from "./shaders/dot-fragment.glsl";
@@ -76,6 +81,8 @@ mat4.translate(dotModelMatrixRight, dotModelMatrixRight, [-gameWidth + .2, 0, 0]
 mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1,0.1,0.1]);
 
 let dotPositionBuffer = gl.createBuffer();
+
+configurePrograms(gl);
 
 function drawOrigin() {
   gl.useProgram(dotProgram);
@@ -188,4 +195,9 @@ function newProjectionMatrix() {
   const aspectRatio = canvas.clientWidth / canvas.clientHeight;
   mat4.perspective(matrix, fov, aspectRatio, nearPlane, farPlane);
   return matrix;
+}
+
+function configurePrograms(gl) {
+  Missile.configureProgram(gl);
+  Explosion.configureProgram(gl);
 }

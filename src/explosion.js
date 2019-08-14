@@ -23,6 +23,13 @@ let positionBuffer = null;
 let uvBuffer = null;
 
 export default class Explosion {
+
+  static configureProgram(gl) {
+    program = configureProgram(gl);
+    positionBuffer = gl.createBuffer();
+    uvBuffer = gl.createBuffer();
+  }
+
   constructor(game, startTime, position, good = true) {
     this.game = game;
     this.gl = this.game.gl;
@@ -34,9 +41,7 @@ export default class Explosion {
     this.startingSize = 0.05;
     this.currentSize = this.startingSize;
     this.randomFloat = randomNumBetween(0, 1);
-    if (!program) program = configureProgram(this.gl);
-    positionBuffer = this.gl.createBuffer();
-    uvBuffer = this.gl.createBuffer();
+
     this.update(startTime);
   }
 

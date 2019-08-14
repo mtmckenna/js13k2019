@@ -5,6 +5,7 @@ import { mat4, vec3 } from "./lib/gl-matrix";
 import {
   programFromCompiledShadersAndUniformNames,
   setPosition,
+  randomNumBetween,
 } from "./webgl-helpers";
 import { UNIFORM_NAMES } from "./models";
 import Missile from "./missile";
@@ -47,6 +48,8 @@ game.viewProjectionMatrix = viewProjectionMatrix;
 game.inverseViewProjectionMatrix = inverseViewProjectionMatrix;
 game.drawables = [];
 game.clickCoords = [];
+game.badMissleLastFired = 0;
+game.minTimeBetweenBadMissles = 1000;
 
 mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
 mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
@@ -185,8 +188,4 @@ function newProjectionMatrix() {
   const aspectRatio = canvas.clientWidth / canvas.clientHeight;
   mat4.perspective(matrix, fov, aspectRatio, nearPlane, farPlane);
   return matrix;
-}
-
-function clamp(min, max, num) {
-  return Math.min(Math.max(num, min), max);
 }

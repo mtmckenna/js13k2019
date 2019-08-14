@@ -16,6 +16,7 @@ const MISSILE_TRAIL_UNIFORM_NAMES = [
   "uExplodeTime",
   "uEndTime",
   "uStartTime",
+  "uGood",
 ];
 
 let program = null;
@@ -23,13 +24,14 @@ let positionBuffer = null;
 let uvBuffer = null;
 
 export default class Missile {
-  constructor(game, launchTime, destination = [1.0, 2.0, 0.0]) {
+  constructor(game, launchTime, destination = [1.0, 2.0, 0.0], good = true) {
     this.game = game;
     this.gl = this.game.gl;
     this.speed = 0.0019;
     this.position = [0, 0, 0];
     this.exploded = false;
     this.dead = false;
+    this.good = good ? 1.0 : 0.0;
     this.destination = [destination[0], destination[1], destination[2]];
     this.angle = vec3.angle([0, 1, 0], this.destination) * Math.sign(this.destination[0]);
     const explodeTime = vec3.distance(this.position, this.destination) / this.speed + launchTime;
@@ -51,7 +53,7 @@ export default class Missile {
 
   draw(time) {
     if (time > this.times.end) return;
-    const { gl, modelMatrix, vertices } = this;
+    const { gl, modelMatrix, vertices, good } = this;
     const { viewMatrix, projectionMatrix } = this.game;
 
     const length = vec3.length(this.destination);
@@ -64,6 +66,7 @@ export default class Missile {
     setPosition(gl, program, positionBuffer, vertices);
     setUvs(gl, program, uvBuffer, PLANE_UVS);
     gl.uniform1f(program.uniformsCache["uTime"], time);
+    gl.uniform1f(program.uniformsCache["uGood"], good);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
@@ -75,7 +78,7 @@ export default class Missile {
   }
 
   explode(time) {
-    const explosion = new Explosion(this.game, time, this.destination);
+    const explosion = new Explosion(this.game, time, this.destination, this.good);
     this.game.drawables.push(explosion);
     this.exploded = true;
   }

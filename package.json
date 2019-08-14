@@ -1,0 +1,27 @@
+{
+  "name": "webgl-test",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "start": "webpack-dev-server --host 0.0.0.0",
+    "build": "webpack --mode production",
+    "check-file-size": "yarn node ./scripts/check-file-size.js",
+    "build-zipped": "yarn run build && yarn node ./scripts/zip-file.js",
+    "party": "yarn run build-zipped && yarn run check-file-size"
+  },
+  "devDependencies": {
+    "archiver": "^3.0.0",
+    "css-loader": "^3.0.0",
+    "html-webpack-inline-source-plugin": "^0.0.10",
+    "html-webpack-plugin": "^3.2.0",
+    "mini-css-extract-plugin": "^0.8.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "raw-loader": "^3.0.0",
+    "terser-webpack-plugin": "^1.3.0",
+    "webpack": "^4.36.1",
+    "webpack-cli": "^3.3.6",
+    "webpack-dev-server": "^3.7.2"
+  },
+  "dependencies": {}
+}

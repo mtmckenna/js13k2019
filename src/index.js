@@ -28,7 +28,7 @@ document.body.addEventListener("touchend", fireMissile, false);
 
 const DOT_UNIFORM_NAMES = [...UNIFORM_NAMES, "uColor"];
 
-const gameWidth = 2;
+const gameWidth = 3;
 const cameraPos = [0.0, 0.0, 1.0];
 const lookAtPos = [0.0, 0.0, -1.0];
 const dimensions = [-1, -1];
@@ -65,11 +65,11 @@ let dotModelMatrix = mat4.create();
 mat4.scale(dotModelMatrix, dotModelMatrix, [0.1,0.1,0.1]);
 
 let dotModelMatrixLeft = mat4.create();
-mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, [-1.7, 0, 0]);
+mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, [gameWidth - .2, 0, 0]);
 mat4.scale(dotModelMatrixLeft, dotModelMatrixLeft, [0.1,0.1,0.1]);
 
 let dotModelMatrixRight = mat4.create();
-mat4.translate(dotModelMatrixRight, dotModelMatrixRight, [1.7, 0, 0]);
+mat4.translate(dotModelMatrixRight, dotModelMatrixRight, [-gameWidth + .2, 0, 0]);
 mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1,0.1,0.1]);
 
 let dotPositionBuffer = gl.createBuffer();

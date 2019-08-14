@@ -29,6 +29,10 @@ export function setUvs(gl, program, buffer, uvs) {
   configureBuffer(gl, program, buffer, uvs, 2, "aUvs");
 }
 
+export function randomNumBetween(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
 // https://nickdesaulniers.github.io/RawWebGL/#/40
 function compileShader(gl, type, shaderSrc) {
   let shader = gl.createShader(type);

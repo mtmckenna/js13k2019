@@ -27,7 +27,7 @@ canvas.addEventListener("webglcontextrestored", () => configurePrograms(gl), fal
 
 import VERTEX_SHADER from "./shaders/vertex.glsl";
 import DOT_FRAGMENT_SHADER from "./shaders/dot-fragment.glsl";
-import { PLANE } from "./models";
+import { PLANE, TRAIL } from "./models";
 
 document.body.addEventListener("pointerup", fireMissile, false);
 document.body.addEventListener("touchend", fireMissile, false);
@@ -54,7 +54,7 @@ game.inverseViewProjectionMatrix = inverseViewProjectionMatrix;
 game.drawables = [];
 game.clickCoords = [];
 game.timeLastBadMissileFiredAt = 0;
-game.minTimeBetweenBadMissiles = 1000;
+game.minTimeBetweenBadMissiles = 500;
 game.chanceOfBadMisslesFiring = 0.1;
 game.bounds = { width: -1, height: -1 };
 
@@ -82,13 +82,17 @@ let dotModelMatrixRight = mat4.create();
 mat4.translate(dotModelMatrixRight, dotModelMatrixRight, [-gameWidth + .2, 0, 0]);
 mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1,0.1,0.1]);
 
+let dotModelMatrix11 = mat4.create();
+mat4.translate(dotModelMatrix11, dotModelMatrix11, [1, -1.0, 0]);
+mat4.scale(dotModelMatrix11, dotModelMatrix11, [0.1,0.1,0.1]);
+
 let dotPositionBuffer = gl.createBuffer();
 
 configurePrograms(gl);
 
 function drawOrigin() {
   gl.useProgram(dotProgram);
-  setPosition(gl, dotProgram, dotPositionBuffer, PLANE);
+  setPosition(gl, dotProgram, dotPositionBuffer, TRAIL);
   gl.uniform1f(dotProgram.uniformsCache["uTime"], 0);
   gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.4, 0.5, 0.3);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrix);
@@ -101,6 +105,9 @@ function drawOrigin() {
 
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrixRight);
   gl.drawArrays(gl.TRIANGLES, 0, PLANE.length / 3);
+
+  gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrix11);
+  gl.drawArrays(gl.TRIANGLES, 0, PLANE.length / 3);
 }
 
 requestAnimationFrame(update);
@@ -109,13 +116,17 @@ function update(time) {
   resize();
   if (time - game.timeLastBadMissileFiredAt > game.minTimeBetweenBadMissiles) {
     if (Math.random() < game.chanceOfBadMisslesFiring) {
-      // game.drawables.push(new Missile(game, time, [0.0, 3.0, 0.0], [.2, -2.0, 0], false));
+      const halfWidth = game.bounds.width / 2;
+      game.drawables.push(new Missile(game,
+        time,
+        [randomNumBetween(-halfWidth, halfWidth), -game.bounds.height, 0.0],
+        [randomNumBetween(-halfWidth, halfWidth), 0, 0.0],
+        false));
       game.timeLastBadMissileFiredAt = time;
     }
   }
 
-  game.clickCoords.forEach((coords) => game.drawables.push(new Missile(game, time, [0, 1.0, 0], coords)));
-  // game.clickCoords.forEach((coords) => game.drawables.push(new Missile(game, time, [0, 0, 0], coords)));
+  game.clickCoords.forEach((coords) => game.drawables.push(new Missile(game, time, [-1, -1, 0], coords)));
   game.clickCoords = [];
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   game.drawables.forEach((drawable) => drawable.update(time));
@@ -124,8 +135,9 @@ function update(time) {
 }
 
 function draw(time) {
-  game.drawables.forEach((drawable) => drawable.draw(time));
   drawOrigin();
+  game.drawables.forEach((drawable) => drawable.draw(time));
+
 }
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
@@ -185,8 +197,8 @@ function resize() {
 
   // Move 0 on the y-axis to the bottom of the screen
   const bottomOfWorld = unprojectPoint([width, height], inverseViewProjectionMatrix);
-  game.bounds.width = bottomOfWorld[0];
-  game.bounds.height = bottomOfWorld[1];
+  game.bounds.width = bottomOfWorld[0] * 2;
+  game.bounds.height = bottomOfWorld[1] * 2;
   bottomOfWorld[1] = -bottomOfWorld[1] + .2;
   vec3.set(cameraPos, 0, bottomOfWorld[1], z);
   vec3.set(lookAtPos, 0, bottomOfWorld[1], -1);

@@ -10,14 +10,13 @@ let PLANE = new Float32Array([
 let DOT = new Float32Array([0, 0, 0]);
 
 let TRAIL = new Float32Array([
-  -0.1,  0.5, 0.0,
-  -0.1, -0.5, 0.0,
-   0.1,  0.5, 0.0,
-  -0.1, -0.5, 0.0,
-   0.1, -0.5, 0.0,
-   0.1,  0.5, 0.0,
+  -0.1,  1.0, 0.0,
+  -0.1,  0.0, 0.0,
+   0.1,  1.0, 0.0,
+  -0.1,  0.0, 0.0,
+   0.1,  0.0, 0.0,
+   0.1,  1.0, 0.0,
   ]);
-
 
 let VERTICES = new Float32Array([
 // Front face

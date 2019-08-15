@@ -35,25 +35,32 @@ export default class Missile {
     this.game = game;
     this.gl = this.game.gl;
     this.speed = 0.0019;
-    this.position = position;
+    this.position = [position[0], position[1], position[2]];
     this.exploded = false;
     this.dead = false;
     this.good = good ? 1.0 : 0.0;
     this.destination = destination;
-    this.angle = vec3.angle([0, 1, 0], this.destination) * Math.sign(this.destination[0]);
+    const destFromOrigin = vec3.create();
+    vec3.subtract(destFromOrigin, this.destination, this.position);
+    const xDirection = this.destination[0] - this.position[0];
+    this.angle = vec3.angle([0, 1, 0], destFromOrigin) * Math.sign(xDirection);
     const explodeTime = vec3.distance(this.position, this.destination) / this.speed + launchTime;
     this.times = { start: launchTime, explode: explodeTime, end: explodeTime + 2000 };
     this.vertices = TRAIL;
 
     this.modelMatrix = mat4.create();
-    // const length = vec3.length(this.destination);
-    const distance = vec3.distance(this.position, this.destination);
-    mat4.identity(this.modelMatrix);
-    mat4.rotate(this.modelMatrix, this.modelMatrix, this.angle, [0, 0, 1]);
-    mat4.scale(this.modelMatrix, this.modelMatrix, [1, distance, 1]);
+    const scaleMat = mat4.create();
+    const rotMat = mat4.create();
+    const transMat = mat4.create();
+    const modMat = mat4.create();
 
-    // Missle starts out as length 1 so move it up 0.5
-    mat4.translate(this.modelMatrix, this.modelMatrix, [0, distance / 2, 0]);
+    const distance = vec3.distance(this.destination, this.position);
+    mat4.scale(scaleMat, this.modelMatrix, [1, distance, 1]);
+    mat4.translate(transMat, this.modelMatrix, [-this.position[0], this.position[1], 0]);
+    mat4.rotate(rotMat, this.modelMatrix, this.angle, [0, 0, 1]);
+    mat4.multiply(modMat, rotMat, scaleMat);
+    mat4.multiply(modMat, transMat, modMat);
+    mat4.copy(this.modelMatrix, modMat);
   }
 
   update(time) {

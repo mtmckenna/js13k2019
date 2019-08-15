@@ -53,8 +53,10 @@ game.viewProjectionMatrix = viewProjectionMatrix;
 game.inverseViewProjectionMatrix = inverseViewProjectionMatrix;
 game.drawables = [];
 game.clickCoords = [];
-game.badMissleLastFired = 0;
-game.minTimeBetweenBadMissles = 1000;
+game.timeLastBadMissileFiredAt = 0;
+game.minTimeBetweenBadMissiles = 1000;
+game.chanceOfBadMisslesFiring = 0.1;
+game.bounds = { width: -1, height: -1 };
 
 mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
 mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
@@ -105,7 +107,15 @@ requestAnimationFrame(update);
 
 function update(time) {
   resize();
-  game.clickCoords.forEach((coords) => game.drawables.push(new Missile(game, time, coords)));
+  if (time - game.timeLastBadMissileFiredAt > game.minTimeBetweenBadMissiles) {
+    if (Math.random() < game.chanceOfBadMisslesFiring) {
+      // game.drawables.push(new Missile(game, time, [0.0, 3.0, 0.0], [.2, -2.0, 0], false));
+      game.timeLastBadMissileFiredAt = time;
+    }
+  }
+
+  game.clickCoords.forEach((coords) => game.drawables.push(new Missile(game, time, [0, 1.0, 0], coords)));
+  // game.clickCoords.forEach((coords) => game.drawables.push(new Missile(game, time, [0, 0, 0], coords)));
   game.clickCoords = [];
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   game.drawables.forEach((drawable) => drawable.update(time));
@@ -174,7 +184,9 @@ function resize() {
   mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 
   // Move 0 on the y-axis to the bottom of the screen
-  const bottomOfWorld = unprojectPoint([width / 2, height], inverseViewProjectionMatrix);
+  const bottomOfWorld = unprojectPoint([width, height], inverseViewProjectionMatrix);
+  game.bounds.width = bottomOfWorld[0];
+  game.bounds.height = bottomOfWorld[1];
   bottomOfWorld[1] = -bottomOfWorld[1] + .2;
   vec3.set(cameraPos, 0, bottomOfWorld[1], z);
   vec3.set(lookAtPos, 0, bottomOfWorld[1], -1);

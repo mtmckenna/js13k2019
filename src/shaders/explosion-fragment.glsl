@@ -25,5 +25,4 @@ void main() {
   color.g = color.g * uGood;
   color.b = min(color.b, 0.2);
   gl_FragColor = vec4(color, alpha);
-
 }

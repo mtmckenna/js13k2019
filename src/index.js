@@ -1,5 +1,4 @@
 //https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
-//http://cgp.wikidot.com/circle-to-circle-collision-detection
 
 import { mat4, vec3 } from "./lib/gl-matrix";
 import {
@@ -27,16 +26,16 @@ canvas.addEventListener("webglcontextrestored", () => configurePrograms(gl), fal
 
 import VERTEX_SHADER from "./shaders/vertex.glsl";
 import DOT_FRAGMENT_SHADER from "./shaders/dot-fragment.glsl";
-import { PLANE, TRAIL } from "./models";
+import { QUAD, TRAIL } from "./models";
 
 document.body.addEventListener("pointerup", fireMissile, false);
 document.body.addEventListener("touchend", fireMissile, false);
 
 const DOT_UNIFORM_NAMES = [...UNIFORM_NAMES, "uColor"];
 
-const gameWidth = 3;
-const cameraPos = [0.0, 0.0, 1.0];
-const lookAtPos = [0.0, 0.0, -1.0];
+const gameWidth = 2;
+const cameraPos = [0.0, 0.0, -1.0];
+const lookAtPos = [0.0, 0.0, 1.0];
 const dimensions = [-1, -1];
 const nearPlane = 0.5;
 const farPlane = 100.0;
@@ -45,6 +44,8 @@ const viewMatrix = newViewMatrix();
 const projectionMatrix = newProjectionMatrix();
 const viewProjectionMatrix = mat4.create();
 const inverseViewProjectionMatrix = mat4.create();
+const GOOD_MISSILE_SPEED = 0.0019;
+const BAD_MISSILE_SPEED = 0.0003;
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -61,7 +62,7 @@ game.bounds = { width: -1, height: -1 };
 mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
 mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 
-gl.enable(gl.BLEND)
+gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 let dotProgram = programFromCompiledShadersAndUniformNames(
@@ -75,11 +76,11 @@ let dotModelMatrix = mat4.create();
 mat4.scale(dotModelMatrix, dotModelMatrix, [0.1,0.1,0.1]);
 
 let dotModelMatrixLeft = mat4.create();
-mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, [gameWidth - .2, 0, 0]);
+mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, [-gameWidth + .2, 0, 0]);
 mat4.scale(dotModelMatrixLeft, dotModelMatrixLeft, [0.1,0.1,0.1]);
 
 let dotModelMatrixRight = mat4.create();
-mat4.translate(dotModelMatrixRight, dotModelMatrixRight, [-gameWidth + .2, 0, 0]);
+mat4.translate(dotModelMatrixRight, dotModelMatrixRight, [gameWidth - .2, 0, 0]);
 mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1,0.1,0.1]);
 
 let dotModelMatrix11 = mat4.create();
@@ -94,43 +95,54 @@ function drawOrigin() {
   gl.useProgram(dotProgram);
   setPosition(gl, dotProgram, dotPositionBuffer, TRAIL);
   gl.uniform1f(dotProgram.uniformsCache["uTime"], 0);
-  gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.4, 0.5, 0.3);
+  gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.2, 0.9, 0.2);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrix);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["viewMatrix"], false, viewMatrix);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["projectionMatrix"], false, projectionMatrix);
-  gl.drawArrays(gl.TRIANGLES, 0, PLANE.length / 3);
+  gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
 
+  gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.9, 0.2, 0.2);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrixLeft);
-  gl.drawArrays(gl.TRIANGLES, 0, PLANE.length / 3);
+  gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
 
+  gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.2, 0.2, 0.9);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrixRight);
-  gl.drawArrays(gl.TRIANGLES, 0, PLANE.length / 3);
+  gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
 
+  gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.4, 0.5, 1.0);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrix11);
-  gl.drawArrays(gl.TRIANGLES, 0, PLANE.length / 3);
+  gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
 }
 
 requestAnimationFrame(update);
 
 function update(time) {
   resize();
+
   if (time - game.timeLastBadMissileFiredAt > game.minTimeBetweenBadMissiles) {
     if (Math.random() < game.chanceOfBadMisslesFiring) {
       const halfWidth = game.bounds.width / 2;
-      game.drawables.push(new Missile(game,
-        time,
-        [randomNumBetween(-halfWidth, halfWidth), -game.bounds.height, 0.0],
-        [randomNumBetween(-halfWidth, halfWidth), 0, 0.0],
-        false));
+      game.drawables.push(
+        new Missile(game,
+          time,
+          [randomNumBetween(-halfWidth, halfWidth), -game.bounds.height, 0.0],
+          [randomNumBetween(-halfWidth, halfWidth), 0, 0.0],
+          false,
+          BAD_MISSILE_SPEED
+        )
+      );
       game.timeLastBadMissileFiredAt = time;
     }
   }
 
-  game.clickCoords.forEach((coords) => game.drawables.push(new Missile(game, time, [-1, -1, 0], coords)));
+  game.clickCoords.forEach((coords) => game.drawables.push(
+    new Missile(game, time, [1, -1, 0], coords, true, GOOD_MISSILE_SPEED)
+    ));
   game.clickCoords = [];
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   game.drawables.forEach((drawable) => drawable.update(time));
   draw(time);
+  checkCollisions(time);
   requestAnimationFrame(update);
 }
 
@@ -138,6 +150,22 @@ function draw(time) {
   drawOrigin();
   game.drawables.forEach((drawable) => drawable.draw(time));
 
+}
+
+// TODO: Consider space partioning to make this faster
+function checkCollisions(time) {
+  game.drawables.forEach((drawable) => {
+    if (drawable.type !== "explosion" || drawable.good === false) return;
+    game.drawables.forEach((otherDrawable) => {
+      if (drawable === otherDrawable) return;
+      if (otherDrawable.type !== "missile") return;
+      if (otherDrawable.good === true) return;
+      const distance = vec3.distance(drawable.position, otherDrawable.payloadPosition);
+      if (distance < (drawable.radius + otherDrawable.radius)) {
+        otherDrawable.explode(time);
+      }
+    })
+  });
 }
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
@@ -152,9 +180,9 @@ function unprojectPoint(point, inverseVPMatrix) {
   const screenX = point[0];
   const screenY = point[1];
   const x = (screenX / canvas.clientWidth) * 2 - 1;
-  const y = (screenY / canvas.clientHeight) * 2 - 1;
+  const y = -(screenY / canvas.clientHeight) * 2 + 1;
 
-  const coords = [-x, -y, -1];
+  const coords = [x, y, 1];
   const worldCoords = vec3.create();
 
   vec3.transformMat4(worldCoords, coords, inverseVPMatrix);
@@ -163,12 +191,15 @@ function unprojectPoint(point, inverseVPMatrix) {
   const distance = -cameraPos[2] / worldCoords[2];
   vec3.scale(worldCoords, worldCoords, distance);
   vec3.add(worldCoords, worldCoords, cameraPos);
+  // console.log("screen: ", point);
+  // console.log("clip: ", [x, y]);
+  // console.log("world: ", worldCoords);
   return worldCoords;
 }
 
 function resetCamera() {
-  vec3.set(cameraPos, 0, 0, 1);
-  vec3.set(lookAtPos, 0, 0, -1);
+  vec3.set(cameraPos, 0, 0, -1);
+  vec3.set(lookAtPos, 0, 0, 1);
   mat4.copy(projectionMatrix, newProjectionMatrix());
   mat4.copy(viewMatrix, newViewMatrix());
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
@@ -185,13 +216,15 @@ function resize() {
   dimensions[0] = width;
   dimensions[1] = height;
 
-  // Size the horizontal bounds by adjusting z postion of the camera
   const bounds = unprojectPoint([width, height], inverseViewProjectionMatrix);
-  const z = Math.max(gameWidth / bounds[0], nearPlane);
+  const z = -Math.max(gameWidth / bounds[0], nearPlane);
+
+  // Size the horizontal bounds by adjusting z postion of the camera
   vec3.set(cameraPos, 0, 0, z);
-  vec3.set(lookAtPos, 0, 0, -1);
+  vec3.set(lookAtPos, 0, 0, 1);
   mat4.copy(projectionMatrix, newProjectionMatrix());
   mat4.copy(viewMatrix, newViewMatrix());
+
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
   mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 

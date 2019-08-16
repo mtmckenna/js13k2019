@@ -1,10 +1,10 @@
-let PLANE = new Float32Array([
-  -1.0,  1.0, 0.0,
-  -1.0, -1.0, 0.0,
-   1.0,  1.0, 0.0,
-  -1.0, -1.0, 0.0,
-   1.0, -1.0, 0.0,
-   1.0,  1.0, 0.0,
+let QUAD = new Float32Array([
+  -0.5,  0.5, 0.0,
+  -0.5, -0.5, 0.0,
+   0.5,  0.5, 0.0,
+  -0.5, -0.5, 0.0,
+   0.5, -0.5, 0.0,
+   0.5,  0.5, 0.0,
 ]);
 
 let DOT = new Float32Array([0, 0, 0]);
@@ -75,7 +75,7 @@ let VERTICES = new Float32Array([
 -1.0, -1.0, -1.0
 ]);
 
-const PLANE_UVS = new Float32Array([0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1]);
+const QUAD_UVS = new Float32Array([0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1]);
 
 const UNIFORM_NAMES = [
   "modelMatrix",
@@ -84,4 +84,4 @@ const UNIFORM_NAMES = [
   "uTime",
 ];
 
-export { PLANE, TRAIL, DOT, VERTICES, PLANE_UVS, UNIFORM_NAMES };
+export { QUAD, TRAIL, DOT, VERTICES, QUAD_UVS, UNIFORM_NAMES };

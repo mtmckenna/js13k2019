@@ -1,7 +1,7 @@
 import { mat4 } from "./lib/gl-matrix";
 import {
   programFromCompiledShadersAndUniformNames,
-  randomNumBetween,
+  randomFloatBetween,
   setPosition,
   setUvs,
 } from "./webgl-helpers";
@@ -48,7 +48,7 @@ export default class Explosion {
     this.startingSize = 0.05;
     this.currentSize = this.startingSize;
     this.radius = this.currentSize / 2;
-    this.randomFloat = randomNumBetween(0, 1);
+    this.randomFloat = randomFloatBetween(0, 1);
 
     this.update(startTime);
   }

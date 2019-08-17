@@ -29,8 +29,12 @@ export function setUvs(gl, program, buffer, uvs) {
   configureBuffer(gl, program, buffer, uvs, 2, "aUvs");
 }
 
-export function randomNumBetween(min, max) {
+export function randomFloatBetween(min, max) {
   return Math.random() * (max - min) + min;
+}
+
+export function randomIntBetween(min, max) {
+  return Math.floor(randomFloatBetween(min, max + 1));
 }
 
 // https://nickdesaulniers.github.io/RawWebGL/#/40

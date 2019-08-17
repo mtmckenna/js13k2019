@@ -4,7 +4,8 @@ import { mat4, vec3 } from "./lib/gl-matrix";
 import {
   programFromCompiledShadersAndUniformNames,
   setPosition,
-  randomNumBetween,
+  randomFloatBetween,
+  randomIntBetween,
 } from "./webgl-helpers";
 import { UNIFORM_NAMES } from "./models";
 import Missile from "./missile";
@@ -72,20 +73,20 @@ let dotProgram = programFromCompiledShadersAndUniformNames(
   DOT_UNIFORM_NAMES
 );
 
-let dotModelMatrix = mat4.create();
-mat4.scale(dotModelMatrix, dotModelMatrix, [0.1, 0.1, 0.1]);
+const townLocations = [[-gameWidth + .2, 0, 0], [0, 0, 0], [gameWidth - .2, -0.1, 0]];
+console.log(townLocations);
 
 let dotModelMatrixLeft = mat4.create();
-mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, [-gameWidth + .2, 0, 0]);
+mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, townLocations[0]);
 mat4.scale(dotModelMatrixLeft, dotModelMatrixLeft, [0.1, 0.1, 0.1]);
 
-let dotModelMatrixRight = mat4.create();
-mat4.translate(dotModelMatrixRight, dotModelMatrixRight, [gameWidth - .2, 0, 0]);
-mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1, 0.1, 0.1]);
+let dotModelMatrix = mat4.create();
+mat4.translate(dotModelMatrix, dotModelMatrix, townLocations[1]);
+mat4.scale(dotModelMatrix, dotModelMatrix, [0.1, 0.1, 0.1]);
 
-let dotModelMatrix11 = mat4.create();
-mat4.translate(dotModelMatrix11, dotModelMatrix11, [1, -1.0, 0]);
-mat4.scale(dotModelMatrix11, dotModelMatrix11, [0.1, 0.1, 0.1]);
+let dotModelMatrixRight = mat4.create();
+mat4.translate(dotModelMatrixRight, dotModelMatrixRight, townLocations[2]);
+mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1, 0.1, 0.1]);
 
 let dotPositionBuffer = gl.createBuffer();
 
@@ -108,10 +109,6 @@ function drawOrigin() {
   gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.2, 0.2, 0.9);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrixRight);
   gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
-
-  gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.4, 0.5, 1.0);
-  gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrix11);
-  gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
 }
 
 requestAnimationFrame(update);
@@ -122,11 +119,13 @@ function update(time) {
   if (time - game.timeLastBadMissileFiredAt > game.minTimeBetweenBadMissiles) {
     if (Math.random() < game.chanceOfBadMisslesFiring) {
       const halfWidth = game.bounds.width / 2;
+      const townToAimAt = townLocations[randomIntBetween(0, townLocations.length - 1)];
       game.drawables.push(
         new Missile(game,
           time,
-          [randomNumBetween(-halfWidth, halfWidth), -game.bounds.height, 0.0],
-          [randomNumBetween(-halfWidth, halfWidth), 0, 0.0],
+          [randomFloatBetween(-halfWidth, halfWidth), -game.bounds.height, 0.0],
+          // [randomFloatBetween(-halfWidth, halfWidth), 0, 0.0],
+          townToAimAt,
           false,
           BAD_MISSILE_SPEED
         )
@@ -192,9 +191,9 @@ function unprojectPoint(point, inverseVPMatrix) {
   const distance = -cameraPos[2] / worldCoords[2];
   vec3.scale(worldCoords, worldCoords, distance);
   vec3.add(worldCoords, worldCoords, cameraPos);
-  // console.log("screen: ", point);
-  // console.log("clip: ", [x, y]);
-  // console.log("world: ", worldCoords);
+  console.log("screen: ", point);
+  console.log("clip: ", [x, y]);
+  console.log("world: ", worldCoords);
   return worldCoords;
 }
 

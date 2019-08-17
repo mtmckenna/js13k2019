@@ -15,7 +15,7 @@ module.exports = {
     new HtmlWebpackPlugin(
       {
         inlineSource: ".(js|css)$",
-        title: "WebGL Test3",
+        title: "Missile Town",
         meta: { viewport: "width=device-width, initial-scale=1" }
       }
       ),

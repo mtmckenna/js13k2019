@@ -46,7 +46,7 @@ const projectionMatrix = newProjectionMatrix();
 const viewProjectionMatrix = mat4.create();
 const inverseViewProjectionMatrix = mat4.create();
 const GOOD_MISSILE_SPEED = 0.0019;
-const BAD_MISSILE_SPEED = 0.0003;
+const BAD_MISSILE_SPEED = 0.00025;
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -56,7 +56,7 @@ game.inverseViewProjectionMatrix = inverseViewProjectionMatrix;
 game.drawables = [];
 game.clickCoords = [];
 game.timeLastBadMissileFiredAt = 0;
-game.minTimeBetweenBadMissiles = 500;
+game.minTimeBetweenBadMissiles = 1000;
 game.chanceOfBadMisslesFiring = 0.1;
 game.bounds = { width: -1, height: -1 };
 
@@ -74,7 +74,6 @@ let dotProgram = programFromCompiledShadersAndUniformNames(
 );
 
 const townLocations = [[-gameWidth + .2, 0, 0], [0, 0, 0], [gameWidth - .2, -0.1, 0]];
-console.log(townLocations);
 
 let dotModelMatrixLeft = mat4.create();
 mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, townLocations[0]);
@@ -119,7 +118,11 @@ function update(time) {
   if (time - game.timeLastBadMissileFiredAt > game.minTimeBetweenBadMissiles) {
     if (Math.random() < game.chanceOfBadMisslesFiring) {
       const halfWidth = game.bounds.width / 2;
-      const townToAimAt = townLocations[randomIntBetween(0, townLocations.length - 1)];
+      const townToAimAt = vec3.create();
+      vec3.copy(townToAimAt, townLocations[randomIntBetween(0, townLocations.length - 1)]);
+      const jitter = randomFloatBetween(-0.1, 0.1);
+      townToAimAt[0] += jitter;
+
       game.drawables.push(
         new Missile(game,
           time,
@@ -191,9 +194,9 @@ function unprojectPoint(point, inverseVPMatrix) {
   const distance = -cameraPos[2] / worldCoords[2];
   vec3.scale(worldCoords, worldCoords, distance);
   vec3.add(worldCoords, worldCoords, cameraPos);
-  console.log("screen: ", point);
-  console.log("clip: ", [x, y]);
-  console.log("world: ", worldCoords);
+  // console.log("screen: ", point);
+  // console.log("clip: ", [x, y]);
+  // console.log("world: ", worldCoords);
   return worldCoords;
 }
 

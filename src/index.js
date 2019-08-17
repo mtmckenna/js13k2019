@@ -19,7 +19,7 @@ const EPSILON = 0.0001;
 const canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
 
-const gl = canvas.getContext("webgl", { premultipliedAlpha: false });
+const gl = canvas.getContext("webgl", { premultipliedAlpha: true });
 
 // https://www.khronos.org/webgl/wiki/HandlingContextLost
 canvas.addEventListener("webglcontextlost", (event) => event.preventDefault(), false);

@@ -15,10 +15,10 @@ float circle(in vec2 _st,in float _radius){
 }
 
 void main() {
-  float alpha = circle(vUvs, 1.0);
   float time = uTime / 100.0;
-  vec3 color = 0.5 + 0.5 * cos(time + vUvs.xyx + vec3(1.0, 2.0, 0.0));
-  float brightness = 0.9;
-  gl_FragColor = vec4(brightness, brightness, brightness, alpha);
-  // gl_FragColor = vec4(color, 1.0);
+  float cutOut = circle(vUvs, 0.4);
+  float dist = distance(vUvs, vec2(0.5));
+  float halo = 1.0 - smoothstep(0.2, 0.6, dist);
+  float alpha = max(cutOut, halo);
+  gl_FragColor = vec4(vec3(.86), 1.0) * alpha;
 }

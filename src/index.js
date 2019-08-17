@@ -73,19 +73,19 @@ let dotProgram = programFromCompiledShadersAndUniformNames(
 );
 
 let dotModelMatrix = mat4.create();
-mat4.scale(dotModelMatrix, dotModelMatrix, [0.1,0.1,0.1]);
+mat4.scale(dotModelMatrix, dotModelMatrix, [0.1, 0.1, 0.1]);
 
 let dotModelMatrixLeft = mat4.create();
 mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, [-gameWidth + .2, 0, 0]);
-mat4.scale(dotModelMatrixLeft, dotModelMatrixLeft, [0.1,0.1,0.1]);
+mat4.scale(dotModelMatrixLeft, dotModelMatrixLeft, [0.1, 0.1, 0.1]);
 
 let dotModelMatrixRight = mat4.create();
 mat4.translate(dotModelMatrixRight, dotModelMatrixRight, [gameWidth - .2, 0, 0]);
-mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1,0.1,0.1]);
+mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1, 0.1, 0.1]);
 
 let dotModelMatrix11 = mat4.create();
 mat4.translate(dotModelMatrix11, dotModelMatrix11, [1, -1.0, 0]);
-mat4.scale(dotModelMatrix11, dotModelMatrix11, [0.1,0.1,0.1]);
+mat4.scale(dotModelMatrix11, dotModelMatrix11, [0.1, 0.1, 0.1]);
 
 let dotPositionBuffer = gl.createBuffer();
 
@@ -136,7 +136,7 @@ function update(time) {
   }
 
   game.clickCoords.forEach((coords) => game.drawables.push(
-    new Missile(game, time, [1, -1, 0], coords, true, GOOD_MISSILE_SPEED)
+    new Missile(game, time, [0, 0, 0], coords, true, GOOD_MISSILE_SPEED)
     ));
   game.clickCoords = [];
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);

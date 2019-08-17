@@ -14,10 +14,9 @@ import Explosion from "./explosion";
 import "./index.css";
 
 const game = {};
+const EPSILON = 0.0001;
 const canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
 
 const gl = canvas.getContext("webgl", { premultipliedAlpha: false });
 
@@ -35,10 +34,10 @@ document.body.addEventListener("touchend", fireMissile, false);
 const DOT_UNIFORM_NAMES = [...UNIFORM_NAMES, "uColor"];
 
 const gameWidth = 2;
-const cameraPos = [0.0, 0.0, -1.0];
-const lookAtPos = [0.0, 0.0, 1.0];
+const cameraPos = vec3.create();
+const lookAtPos = vec3.create();
 const dimensions = [-1, -1];
-const nearPlane = 0.5;
+const nearPlane = 1.0 + EPSILON;
 const farPlane = 100.0;
 const fov = 30;
 const viewMatrix = newViewMatrix();
@@ -118,6 +117,7 @@ function update(time) {
   if (time - game.timeLastBadMissileFiredAt > game.minTimeBetweenBadMissiles) {
     if (Math.random() < game.chanceOfBadMisslesFiring) {
       const halfWidth = game.bounds.width / 2;
+      const launchX = randomFloatBetween(-halfWidth, halfWidth);
       const townToAimAt = vec3.create();
       vec3.copy(townToAimAt, townLocations[randomIntBetween(0, townLocations.length - 1)]);
       const jitter = randomFloatBetween(-0.1, 0.1);
@@ -126,8 +126,7 @@ function update(time) {
       game.drawables.push(
         new Missile(game,
           time,
-          [randomFloatBetween(-halfWidth, halfWidth), -game.bounds.height, 0.0],
-          // [randomFloatBetween(-halfWidth, halfWidth), 0, 0.0],
+          [launchX, -game.bounds.height, 0.0],
           townToAimAt,
           false,
           BAD_MISSILE_SPEED
@@ -151,7 +150,6 @@ function update(time) {
 function draw(time) {
   drawOrigin();
   game.drawables.forEach((drawable) => drawable.draw(time));
-
 }
 
 // TODO: Consider space partioning to make this faster
@@ -210,11 +208,14 @@ function resetCamera() {
 }
 
 function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
 
   // Return if dimensions haven't changed
   if (dimensions[0] === width && dimensions[1] === height) return;
+  gl.viewport(0, 0, width, height);
   resetCamera();
   dimensions[0] = width;
   dimensions[1] = height;

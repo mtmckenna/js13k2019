@@ -9,7 +9,11 @@ module.exports = {
     contentBase: "./dist"
   },
   optimization: {
-    minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
+    minimizer: [new TerserJSPlugin({
+      terserOptions: {
+        module: true,
+      },
+    }), new OptimizeCSSAssetsPlugin({})],
   },
   plugins: [
     new HtmlWebpackPlugin(

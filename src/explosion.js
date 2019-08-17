@@ -7,7 +7,7 @@ import {
 } from "./webgl-helpers";
 
 import VERTEX_SHADER from "./shaders/vertex.glsl";
-import DOT_FRAGMENT_SHADER from "./shaders/explosion-fragment.glsl";
+import FRAGMENT_SHADER from "./shaders/explosion-fragment.glsl";
 import { QUAD, QUAD_UVS, UNIFORM_NAMES } from "./models";
 
 const EXPLOSION_UNIFORM_NAMES = [
@@ -89,7 +89,7 @@ function configureProgram(gl) {
   return programFromCompiledShadersAndUniformNames(
     gl,
     VERTEX_SHADER,
-    DOT_FRAGMENT_SHADER,
+    FRAGMENT_SHADER,
     EXPLOSION_UNIFORM_NAMES
   );
 }

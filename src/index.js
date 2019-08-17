@@ -10,6 +10,7 @@ import {
 import { UNIFORM_NAMES } from "./models";
 import Missile from "./missile";
 import Explosion from "./explosion";
+import Moon from "./moon";
 
 import "./index.css";
 
@@ -53,6 +54,7 @@ game.projectionMatrix = projectionMatrix;
 game.viewProjectionMatrix = viewProjectionMatrix;
 game.inverseViewProjectionMatrix = inverseViewProjectionMatrix;
 game.drawables = [];
+game.scenary = [];
 game.clickCoords = [];
 game.timeLastBadMissileFiredAt = 0;
 game.minTimeBetweenBadMissiles = 1000;
@@ -87,6 +89,9 @@ mat4.translate(dotModelMatrixRight, dotModelMatrixRight, townLocations[2]);
 mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1, 0.1, 0.1]);
 
 let dotPositionBuffer = gl.createBuffer();
+
+const moon = new Moon(game, [0, 0, 0]);
+game.scenary.push(moon);
 
 configurePrograms(gl);
 
@@ -142,6 +147,7 @@ function update(time) {
   game.clickCoords = [];
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   game.drawables.forEach((drawable) => drawable.update(time));
+  game.scenary.forEach((drawable) => drawable.update(time));
   draw(time);
   checkCollisions(time);
   requestAnimationFrame(update);
@@ -149,6 +155,7 @@ function update(time) {
 
 function draw(time) {
   drawOrigin();
+  game.scenary.forEach((drawable) => drawable.draw(time));
   game.drawables.forEach((drawable) => drawable.draw(time));
 }
 
@@ -243,6 +250,13 @@ function resize() {
   mat4.copy(viewMatrix, newViewMatrix());
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
   mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
+
+  // Place moon
+  const radius = gameWidth * .1;
+  moon.radius = radius;
+  const topRightOfWorld = unprojectPoint([width * .9, height * .1], inverseViewProjectionMatrix);
+  topRightOfWorld[2] = 1; // Move moon behind stuff
+  vec3.copy(moon.position, topRightOfWorld);
 }
 
 function newViewMatrix() {
@@ -259,6 +273,7 @@ function newProjectionMatrix() {
 }
 
 function configurePrograms(gl) {
+  Moon.configureProgram(gl);
   Missile.configureProgram(gl);
   Explosion.configureProgram(gl);
 }

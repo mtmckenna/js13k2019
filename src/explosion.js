@@ -14,9 +14,12 @@ const EXPLOSION_UNIFORM_NAMES = [
   ...UNIFORM_NAMES,
   "uEndTime",
   "uStartTime",
+  "uStartFadeTime",
   "uRandom",
   "uGood",
 ];
+
+const FADE_TIME = 500;
 
 let program = null;
 let positionBuffer = null;
@@ -35,9 +38,11 @@ export default class Explosion {
     this.game = game;
     this.gl = this.game.gl;
     this.position = position;
-    this.times = { start: startTime, end: startTime + 1500 };
+    const startFadeTime = startTime + 1000;
+    this.times = { start: startTime, startFade: startFadeTime, end: startFadeTime + FADE_TIME };
     this.dead = false;
     this.good = good;
+    this.collidable = true;
     this.goodFloat = good ? 1.0 : 0.0;
     this.modelMatrix = mat4.create();
     this.startingSize = 0.05;
@@ -50,6 +55,7 @@ export default class Explosion {
 
   update(time) {
     if (time > this.times.end) this.dead = true;
+    if (time > this.times.startFade) this.collidable = false;
 
     const { modelMatrix } = this;
     this.currentSize += .005;
@@ -68,6 +74,8 @@ export default class Explosion {
     setUvs(gl, program, uvBuffer, QUAD_UVS);
     gl.uniform1f(program.uniformsCache["uGood"], this.goodFloat);
     gl.uniform1f(program.uniformsCache["uTime"], time);
+    gl.uniform1f(program.uniformsCache["uEndTime"], this.times.end);
+    gl.uniform1f(program.uniformsCache["uStartFadeTime"], this.times.startFade);
     gl.uniform3f(program.uniformsCache["uColor"], 1.0, 0.5, 0.0);
     gl.uniform1f(program.uniformsCache["uRandom"], randomFloat);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);

@@ -158,6 +158,7 @@ function checkCollisions(time) {
     if (drawable.type !== "explosion" || drawable.good === false) return;
     game.drawables.forEach((otherDrawable) => {
       if (drawable === otherDrawable) return;
+      if (drawable.collidable === false) return;
       if (otherDrawable.type !== "missile") return;
       if (otherDrawable.good === true) return;
       const distance = vec3.distance(drawable.position, otherDrawable.payloadPosition);

@@ -61,15 +61,13 @@ export default class Missile {
     const scaleMat = mat4.create();
     const rotMat = mat4.create();
     const transMat = mat4.create();
-    const modMat = mat4.create();
 
     const distance = vec3.distance(this.destination, this.position);
     mat4.scale(scaleMat, this.modelMatrix, [1, distance, 1]);
     mat4.translate(transMat, this.modelMatrix, [this.position[0], this.position[1], 0]);
     mat4.rotate(rotMat, this.modelMatrix, this.angle, [0, 0, 1]);
-    mat4.multiply(modMat, rotMat, scaleMat);
-    mat4.multiply(modMat, transMat, modMat);
-    mat4.copy(this.modelMatrix, modMat);
+    mat4.multiply(this.modelMatrix, rotMat, scaleMat);
+    mat4.multiply(this.modelMatrix, transMat, this.modelMatrix);
   }
 
   update(time) {

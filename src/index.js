@@ -128,13 +128,12 @@ function shakeScreen() {
   const x = game.bounds.width;
   const y = game.bounds.height;
   const z = cameraPos[2];
-  game.shakeInfo.amplitude[0] += .002 * (x / 4);
-  game.shakeInfo.amplitude[1] += .005 * (y / 2.88);
-  game.shakeInfo.amplitude[2] += .005 * (z / -1.67);
+  game.shakeInfo.amplitude[0] += .002 * (x / 4.0);
+  game.shakeInfo.amplitude[1] += .007 * Math.pow(y / 3.0, 2.5);
+  game.shakeInfo.amplitude[2] += .004 * (z / -2.0);
   game.shakeInfo.dir[0] = oneOrMinusOne();
   game.shakeInfo.dir[1] = oneOrMinusOne();
   game.shakeInfo.dir[2] = oneOrMinusOne();
-  // console.log(game.bounds, z, game.shakeInfo.amplitude);
 }
 
 function updateShake(time) {

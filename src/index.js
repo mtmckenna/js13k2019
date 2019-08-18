@@ -125,7 +125,7 @@ requestAnimationFrame(update);
 
 function shakeScreen() {
   game.shakeInfo.pos = [0, 0];
-  game.shakeInfo.amplitude += .01;
+  game.shakeInfo.amplitude += .004;
   game.shakeInfo.dir[0] = oneOrMinusOne();
   game.shakeInfo.dir[1] = oneOrMinusOne();
 }

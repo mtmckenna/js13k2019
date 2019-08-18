@@ -218,7 +218,7 @@ function draw(time) {
 // TODO: Consider space partioning to make this faster
 function checkCollisions(time) {
   game.drawables.forEach((drawable) => {
-    if (drawable.type !== "explosion" || drawable.good === false) return;
+    if (drawable.type !== "explosion") return; // Only explosions can blow up other stuff
     game.drawables.forEach((otherDrawable) => {
       if (drawable === otherDrawable) return;
       if (drawable.collidable === false) return;

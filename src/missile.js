@@ -74,7 +74,6 @@ export default class Missile {
     if (time > this.times.end) this.dead = true;
     if (this.exploded) return;
     this.percentDone = Math.min((time - this.times.start) / (this.times.explode - this.times.start), 1);
-    if (this.percentDone >= 1.0 && !this.exploded) this.explode(time);
     vec3.lerp(this.payloadPosition, this.position, this.destination, this.percentDone);
   }
 
@@ -95,6 +94,15 @@ export default class Missile {
     gl.uniform1f(program.uniformsCache["uEndTime"], this.times.end);
     gl.uniform1f(program.uniformsCache["uPercentDone"], this.percentDone);
     gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+  }
+
+  maybeExplode(time) {
+    if (this.percentDone >= 1.0 && !this.exploded) {
+      this.explode(time);
+      return true;
+    }
+
+    return false;
   }
 
   explode(time) {

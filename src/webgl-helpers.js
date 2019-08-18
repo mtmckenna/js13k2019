@@ -37,6 +37,10 @@ export function randomIntBetween(min, max) {
   return Math.floor(randomFloatBetween(min, max + 1));
 }
 
+export function oneOrMinusOne() {
+  return Math.round(Math.random()) * 2 - 1;
+}
+
 // https://nickdesaulniers.github.io/RawWebGL/#/40
 function compileShader(gl, type, shaderSrc) {
   let shader = gl.createShader(type);

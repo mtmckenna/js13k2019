@@ -4,6 +4,7 @@ import { mat4, vec3 } from "./lib/gl-matrix";
 import {
   programFromCompiledShadersAndUniformNames,
   setPosition,
+  oneOrMinusOne,
   randomFloatBetween,
   randomIntBetween,
 } from "./webgl-helpers";
@@ -60,6 +61,12 @@ game.timeLastBadMissileFiredAt = 0;
 game.minTimeBetweenBadMissiles = 1000;
 game.chanceOfBadMisslesFiring = 0.1;
 game.bounds = { width: -1, height: -1 };
+game.camera = { staticPos: vec3.create() };
+game.shakeInfo = {
+  amplitude: 0,
+  dir: [1, 1],
+  pos: [0, 0],
+}
 
 mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
 mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
@@ -116,8 +123,39 @@ function drawOrigin() {
 
 requestAnimationFrame(update);
 
+function shakeScreen() {
+  game.shakeInfo.pos = [0, 0];
+  game.shakeInfo.amplitude += .01;
+  game.shakeInfo.dir[0] = oneOrMinusOne();
+  game.shakeInfo.dir[1] = oneOrMinusOne();
+}
+
+function updateShake(time) {
+  game.shakeInfo.amplitude *= .9;
+  const { shakeInfo } = game;
+  const { amplitude, dir } = shakeInfo;
+
+  if (Math.abs(amplitude) <= .001) {
+    shakeInfo.pos = [0, 0];
+  } else {
+    shakeInfo.pos = [
+      Math.sin(time / 50) * amplitude * dir[0],
+      Math.sin(time / 50) * amplitude * dir[1]
+    ];
+  }
+}
+
 function update(time) {
   resize();
+  updateShake(time);
+
+  const { staticPos } = game.camera;
+  const { shakeInfo } = game;
+  vec3.set(cameraPos, staticPos[0] + shakeInfo.pos[0], staticPos[1] + shakeInfo.pos[1], staticPos[2]);
+
+  mat4.copy(viewMatrix, newViewMatrix());
+  mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
+  mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 
   if (time - game.timeLastBadMissileFiredAt > game.minTimeBetweenBadMissiles) {
     if (Math.random() < game.chanceOfBadMisslesFiring) {
@@ -146,7 +184,12 @@ function update(time) {
     ));
   game.clickCoords = [];
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
-  game.drawables.forEach((drawable) => drawable.update(time));
+  game.drawables.forEach((drawable) => {
+    if (drawable.type === "missile") {
+      if (drawable.maybeExplode(time)) shakeScreen();
+    }
+    drawable.update(time);
+  });
   game.scenary.forEach((drawable) => drawable.update(time));
   draw(time);
   checkCollisions(time);
@@ -244,8 +287,10 @@ function resize() {
   game.bounds.width = bottomOfWorld[0] * 2;
   game.bounds.height = bottomOfWorld[1] * 2;
   bottomOfWorld[1] = -bottomOfWorld[1] + .2;
-  vec3.set(cameraPos, 0, bottomOfWorld[1], z);
-  vec3.set(lookAtPos, 0, bottomOfWorld[1], -1);
+
+  vec3.set(game.camera.staticPos, 0, bottomOfWorld[1], z);
+  vec3.copy(cameraPos, game.camera.staticPos);
+  vec3.set(lookAtPos, 0, game.camera.staticPos[1], -1);
   mat4.copy(projectionMatrix, newProjectionMatrix());
   mat4.copy(viewMatrix, newViewMatrix());
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);

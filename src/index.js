@@ -63,7 +63,7 @@ game.chanceOfBadMisslesFiring = 0.1;
 game.bounds = { width: -1, height: -1 };
 game.camera = { staticPos: vec3.create() };
 game.shakeInfo = {
-  amplitude: 0,
+  amplitude: vec3.create(),
   dir: vec3.create(),
   pos: vec3.create(),
 }
@@ -124,25 +124,33 @@ function drawOrigin() {
 requestAnimationFrame(update);
 
 function shakeScreen() {
-  game.shakeInfo.pos = [0, 0];
-  game.shakeInfo.amplitude += .004;
+  game.shakeInfo.pos = [0, 0, 0];
+  const x = game.bounds.width;
+  const y = game.bounds.height;
+  const z = cameraPos[2];
+  game.shakeInfo.amplitude[0] += .002 * (x / 4);
+  game.shakeInfo.amplitude[1] += .005 * (y / 2.88);
+  game.shakeInfo.amplitude[2] += .005 * (z / -1.67);
   game.shakeInfo.dir[0] = oneOrMinusOne();
   game.shakeInfo.dir[1] = oneOrMinusOne();
   game.shakeInfo.dir[2] = oneOrMinusOne();
+  // console.log(game.bounds, z, game.shakeInfo.amplitude);
 }
 
 function updateShake(time) {
-  game.shakeInfo.amplitude *= .9;
   const { shakeInfo } = game;
   const { amplitude, dir } = shakeInfo;
+  amplitude[0] *= 0.9;
+  amplitude[1] *= 0.9;
+  amplitude[2] *= 0.9;
 
-  if (Math.abs(amplitude) <= .001) {
+  if (Math.abs(amplitude[0]) <= .001) {
     shakeInfo.pos = [0, 0, 0];
   } else {
     shakeInfo.pos = [
-      Math.sin(time / 50) * amplitude * dir[0],
-      Math.sin(time / 50) * amplitude * dir[1],
-      Math.sin(time / 50) * amplitude * dir[2],
+      Math.sin(time / 200) * amplitude[0] * dir[0],
+      Math.sin(time / 200) * amplitude[1] * dir[1],
+      Math.sin(time / 200) * amplitude[2] * dir[2],
     ];
   }
 }

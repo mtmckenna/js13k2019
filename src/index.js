@@ -64,8 +64,8 @@ game.bounds = { width: -1, height: -1 };
 game.camera = { staticPos: vec3.create() };
 game.shakeInfo = {
   amplitude: 0,
-  dir: [1, 1],
-  pos: [0, 0],
+  dir: vec3.create(),
+  pos: vec3.create(),
 }
 
 mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
@@ -128,6 +128,7 @@ function shakeScreen() {
   game.shakeInfo.amplitude += .004;
   game.shakeInfo.dir[0] = oneOrMinusOne();
   game.shakeInfo.dir[1] = oneOrMinusOne();
+  game.shakeInfo.dir[2] = oneOrMinusOne();
 }
 
 function updateShake(time) {
@@ -136,11 +137,12 @@ function updateShake(time) {
   const { amplitude, dir } = shakeInfo;
 
   if (Math.abs(amplitude) <= .001) {
-    shakeInfo.pos = [0, 0];
+    shakeInfo.pos = [0, 0, 0];
   } else {
     shakeInfo.pos = [
       Math.sin(time / 50) * amplitude * dir[0],
-      Math.sin(time / 50) * amplitude * dir[1]
+      Math.sin(time / 50) * amplitude * dir[1],
+      Math.sin(time / 50) * amplitude * dir[2],
     ];
   }
 }
@@ -151,7 +153,10 @@ function update(time) {
 
   const { staticPos } = game.camera;
   const { shakeInfo } = game;
-  vec3.set(cameraPos, staticPos[0] + shakeInfo.pos[0], staticPos[1] + shakeInfo.pos[1], staticPos[2]);
+  vec3.set(cameraPos,
+    staticPos[0] + shakeInfo.pos[0],
+    staticPos[1] + shakeInfo.pos[1],
+    staticPos[2] + shakeInfo.pos[2]);
 
   mat4.copy(viewMatrix, newViewMatrix());
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);

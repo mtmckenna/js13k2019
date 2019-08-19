@@ -4,7 +4,6 @@ import { mat4, vec3 } from "./lib/gl-matrix";
 import {
   programFromCompiledShadersAndUniformNames,
   setPosition,
-  clamp,
   oneOrMinusOne,
   randomFloatBetween,
   randomIntBetween,
@@ -18,6 +17,7 @@ import "./index.css";
 
 const game = {};
 const EPSILON = 0.0001;
+const screenShakeZFudge = 0.2;
 const canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
 
@@ -26,30 +26,6 @@ const gl = canvas.getContext("webgl", { premultipliedAlpha: true });
 // https://www.khronos.org/webgl/wiki/HandlingContextLost
 canvas.addEventListener("webglcontextlost", (event) => event.preventDefault(), false);
 canvas.addEventListener("webglcontextrestored", () => configurePrograms(gl), false);
-
-// let sum = 0;
-
-// document.body.addEventListener("keydown", function(event) {
-//   const key = event.key;
-//   window.key = key;
-//   const nudge = 0.01;
-//   switch (key) {
-//     case "ArrowLeft":
-//       sum += nudge;
-//       mat4.fromTranslation(cameraModelMatrix, [-sum, 0, 0]);
-//       // mat4.translate(cameraModelMatrix, cameraModelMatrix, [-nudge, 0, 0]);
-//       // cameraPos[0] -= nudge;
-//       break;
-//     case "ArrowRight":
-//         sum -= nudge;
-//         mat4.fromTranslation(cameraModelMatrix, [sum, 0, 0]);
-//         // mat4.translate(cameraModelMatrix, cameraModelMatrix, [nudge, 0, 0]);
-//       // cameraPos[1] += nudge;
-//       break;
-//     default:
-//       console.log("nope", key)
-//   }
-// });
 
 import VERTEX_SHADER from "./shaders/vertex.glsl";
 import DOT_FRAGMENT_SHADER from "./shaders/dot-fragment.glsl";
@@ -150,28 +126,17 @@ function drawOrigin() {
 requestAnimationFrame(update);
 
 function shakeScreen() {
-  // const x = game.bounds.width;
-  // const y = game.bounds.height;
-  // const z = cameraPos[2];
-  game.shakeInfo.amplitude[0] += .01;
-  game.shakeInfo.amplitude[1] += .01;
-  game.shakeInfo.amplitude[2] -= .08;
-  game.shakeInfo.dir[0] = oneOrMinusOne();
-  game.shakeInfo.dir[1] = oneOrMinusOne();
-  // game.shakeInfo.dir[2] = oneOrMinusOne();
-  game.shakeInfo.dir[2] = 1;
+  vec3.add(game.shakeInfo.amplitude, game.shakeInfo.amplitude, [0.009, 0.009, 0.009]);
+  vec3.set(game.shakeInfo.dir, oneOrMinusOne(), oneOrMinusOne(), -1);
 }
 
 function updateShake(time) {
   const { shakeInfo } = game;
   const { amplitude, dir } = shakeInfo;
-  amplitude[0] *= 0.9;
-  amplitude[1] *= 0.9;
-  amplitude[2] *= 0.9;
+  vec3.scale(amplitude, amplitude, 0.9);
 
   if (Math.abs(amplitude[0]) <= .001) {
     vec3.set(shakeInfo.pos, 0, 0, 0);
-    // console.log('done')
   } else {
     const offset = Math.sin(time / 200);
     vec3.set(shakeInfo.pos,
@@ -179,7 +144,6 @@ function updateShake(time) {
       offset * amplitude[1] * dir[1],
       offset * amplitude[2] * dir[2],
     );
-    // console.log(shakeInfo.pos[2]);
   }
 }
 
@@ -187,8 +151,7 @@ function update(time) {
   resize();
   updateShake(time);
   const { shakeInfo } = game;
-  mat4.fromTranslation(cameraModelMatrix, [shakeInfo.pos[0], shakeInfo.pos[1], 0]);
-  // cameraPos[2] = Math.max(-nearPlane, cameraPos[2]);
+  mat4.fromTranslation(cameraModelMatrix, shakeInfo.pos);
   mat4.copy(viewMatrix, newViewMatrix());
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
   mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
@@ -307,7 +270,8 @@ function resize() {
   dimensions[1] = height;
 
   const bounds = unprojectPoint([width, height], inverseViewProjectionMatrix);
-  const z = -Math.max(gameWidth / bounds[0], nearPlane);
+  const z = -Math.max(gameWidth / bounds[0], nearPlane + screenShakeZFudge);
+  console.log(gameWidth/bounds[0], nearPlane, z);
 
   // Size the horizontal bounds by adjusting z postion of the camera
   vec3.set(cameraPos, 0, 0, z);

@@ -41,6 +41,10 @@ export function oneOrMinusOne() {
   return Math.round(Math.random()) * 2 - 1;
 }
 
+export function clamp(value, min, max) {
+  return Math.max(Math.min(value, max), min);
+}
+
 // https://nickdesaulniers.github.io/RawWebGL/#/40
 function compileShader(gl, type, shaderSrc) {
   let shader = gl.createShader(type);

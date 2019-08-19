@@ -4,6 +4,7 @@ import { mat4, vec3 } from "./lib/gl-matrix";
 import {
   programFromCompiledShadersAndUniformNames,
   setPosition,
+  clamp,
   oneOrMinusOne,
   randomFloatBetween,
   randomIntBetween,
@@ -26,6 +27,30 @@ const gl = canvas.getContext("webgl", { premultipliedAlpha: true });
 canvas.addEventListener("webglcontextlost", (event) => event.preventDefault(), false);
 canvas.addEventListener("webglcontextrestored", () => configurePrograms(gl), false);
 
+// let sum = 0;
+
+// document.body.addEventListener("keydown", function(event) {
+//   const key = event.key;
+//   window.key = key;
+//   const nudge = 0.01;
+//   switch (key) {
+//     case "ArrowLeft":
+//       sum += nudge;
+//       mat4.fromTranslation(cameraModelMatrix, [-sum, 0, 0]);
+//       // mat4.translate(cameraModelMatrix, cameraModelMatrix, [-nudge, 0, 0]);
+//       // cameraPos[0] -= nudge;
+//       break;
+//     case "ArrowRight":
+//         sum -= nudge;
+//         mat4.fromTranslation(cameraModelMatrix, [sum, 0, 0]);
+//         // mat4.translate(cameraModelMatrix, cameraModelMatrix, [nudge, 0, 0]);
+//       // cameraPos[1] += nudge;
+//       break;
+//     default:
+//       console.log("nope", key)
+//   }
+// });
+
 import VERTEX_SHADER from "./shaders/vertex.glsl";
 import DOT_FRAGMENT_SHADER from "./shaders/dot-fragment.glsl";
 import { QUAD, TRAIL } from "./models";
@@ -42,6 +67,7 @@ const dimensions = [-1, -1];
 const nearPlane = 1.0 + EPSILON;
 const farPlane = 100.0;
 const fov = 30;
+const cameraModelMatrix = mat4.create();
 const viewMatrix = newViewMatrix();
 const projectionMatrix = newProjectionMatrix();
 const viewProjectionMatrix = mat4.create();
@@ -124,16 +150,16 @@ function drawOrigin() {
 requestAnimationFrame(update);
 
 function shakeScreen() {
-  game.shakeInfo.pos = [0, 0, 0];
-  const x = game.bounds.width;
-  const y = game.bounds.height;
-  const z = cameraPos[2];
-  game.shakeInfo.amplitude[0] += .001 * (x / 4.0);
-  game.shakeInfo.amplitude[1] += .003 * Math.pow(y / 3.0, 2.5);
-  game.shakeInfo.amplitude[2] += .002 * (z / -2.0);
+  // const x = game.bounds.width;
+  // const y = game.bounds.height;
+  // const z = cameraPos[2];
+  game.shakeInfo.amplitude[0] += .01;
+  game.shakeInfo.amplitude[1] += .01;
+  game.shakeInfo.amplitude[2] -= .08;
   game.shakeInfo.dir[0] = oneOrMinusOne();
   game.shakeInfo.dir[1] = oneOrMinusOne();
-  game.shakeInfo.dir[2] = oneOrMinusOne();
+  // game.shakeInfo.dir[2] = oneOrMinusOne();
+  game.shakeInfo.dir[2] = 1;
 }
 
 function updateShake(time) {
@@ -144,27 +170,25 @@ function updateShake(time) {
   amplitude[2] *= 0.9;
 
   if (Math.abs(amplitude[0]) <= .001) {
-    shakeInfo.pos = [0, 0, 0];
+    vec3.set(shakeInfo.pos, 0, 0, 0);
+    // console.log('done')
   } else {
-    shakeInfo.pos = [
-      Math.sin(time / 200) * amplitude[0] * dir[0],
-      Math.sin(time / 200) * amplitude[1] * dir[1],
-      Math.sin(time / 200) * amplitude[2] * dir[2],
-    ];
+    const offset = Math.sin(time / 200);
+    vec3.set(shakeInfo.pos,
+      offset * amplitude[0] * dir[0],
+      offset * amplitude[1] * dir[1],
+      offset * amplitude[2] * dir[2],
+    );
+    // console.log(shakeInfo.pos[2]);
   }
 }
 
 function update(time) {
   resize();
   updateShake(time);
-
-  const { staticPos } = game.camera;
   const { shakeInfo } = game;
-  vec3.set(cameraPos,
-    staticPos[0] + shakeInfo.pos[0],
-    staticPos[1] + shakeInfo.pos[1],
-    staticPos[2] + shakeInfo.pos[2]);
-
+  mat4.fromTranslation(cameraModelMatrix, [shakeInfo.pos[0], shakeInfo.pos[1], 0]);
+  // cameraPos[2] = Math.max(-nearPlane, cameraPos[2]);
   mat4.copy(viewMatrix, newViewMatrix());
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
   mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
@@ -302,7 +326,8 @@ function resize() {
 
   vec3.set(game.camera.staticPos, 0, bottomOfWorld[1], z);
   vec3.copy(cameraPos, game.camera.staticPos);
-  vec3.set(lookAtPos, 0, game.camera.staticPos[1], -1);
+
+  vec3.set(lookAtPos, 0, game.camera.staticPos[1], 1);
   mat4.copy(projectionMatrix, newProjectionMatrix());
   mat4.copy(viewMatrix, newViewMatrix());
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
@@ -319,6 +344,7 @@ function resize() {
 function newViewMatrix() {
   let matrix = mat4.create();
   mat4.lookAt(matrix, cameraPos, lookAtPos, [0.0, 1.0, 0.0]);
+  mat4.multiply(matrix, matrix, cameraModelMatrix);
   return matrix;
 }
 

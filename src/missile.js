@@ -108,6 +108,7 @@ export default class Missile {
   explode(time) {
     if (this.exploded) return;
     const explosion = new Explosion(this.game, time, this.payloadPosition, this.good);
+    if (this.percentDone >= 1.0 && !this.good) explosion.collidable = false;
     this.game.drawables.push(explosion);
     this.times.explode = time;
     this.times.end = time + FADE_TIME;

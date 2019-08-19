@@ -38,7 +38,7 @@ export default class Explosion {
     this.game = game;
     this.gl = this.game.gl;
     this.position = position;
-    const startFadeTime = startTime + 1000;
+    const startFadeTime = startTime + 2000;
     this.times = { start: startTime, startFade: startFadeTime, end: startFadeTime + FADE_TIME };
     this.dead = false;
     this.good = good;

@@ -50,6 +50,8 @@ const viewProjectionMatrix = mat4.create();
 const inverseViewProjectionMatrix = mat4.create();
 const GOOD_MISSILE_SPEED = 0.0019;
 const BAD_MISSILE_SPEED = 0.00025;
+const GOOD_MISSILE_SHAKE_AMOUNT = 0.009;
+const BAD_MISSILE_SHAKE_AMOUNT = 0.03;
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -125,8 +127,8 @@ function drawOrigin() {
 
 requestAnimationFrame(update);
 
-function shakeScreen() {
-  vec3.add(game.shakeInfo.amplitude, game.shakeInfo.amplitude, [0.009, 0.009, 0.009]);
+function shakeScreen(amount) {
+  vec3.add(game.shakeInfo.amplitude, game.shakeInfo.amplitude, [amount, amount, amount]);
   vec3.set(game.shakeInfo.dir, oneOrMinusOne(), oneOrMinusOne(), -1);
 }
 
@@ -185,7 +187,13 @@ function update(time) {
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   game.drawables.forEach((drawable) => {
     if (drawable.type === "missile") {
-      if (drawable.maybeExplode(time)) shakeScreen();
+      if (drawable.maybeExplode(time)) {
+        if (!drawable.good && drawable.percentDone >= 1.0) {
+          shakeScreen(BAD_MISSILE_SHAKE_AMOUNT);
+        } else {
+          shakeScreen(GOOD_MISSILE_SHAKE_AMOUNT);
+        }
+      }
     }
     drawable.update(time);
   });
@@ -210,6 +218,7 @@ function checkCollisions(time) {
       if (drawable.collidable === false) return;
       if (otherDrawable.type !== "missile") return;
       if (otherDrawable.good === true) return;
+      if (otherDrawable.collidable === false) return;
       const distance = vec3.distance(drawable.position, otherDrawable.payloadPosition);
       if (distance < (drawable.radius + otherDrawable.radius)) {
         otherDrawable.explode(time);
@@ -271,7 +280,6 @@ function resize() {
 
   const bounds = unprojectPoint([width, height], inverseViewProjectionMatrix);
   const z = -Math.max(gameWidth / bounds[0], nearPlane + screenShakeZFudge);
-  console.log(gameWidth/bounds[0], nearPlane, z);
 
   // Size the horizontal bounds by adjusting z postion of the camera
   vec3.set(cameraPos, 0, 0, z);

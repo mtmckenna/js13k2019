@@ -1,5 +1,6 @@
 //https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
 
+import TinyMusic from "./lib/tinymusic";
 import { mat4, vec3 } from "./lib/gl-matrix";
 import {
   programFromCompiledShadersAndUniformNames,
@@ -35,6 +36,7 @@ document.body.addEventListener("pointerup", fireMissile, false);
 document.body.addEventListener("touchend", fireMissile, false);
 
 const DOT_UNIFORM_NAMES = [...UNIFORM_NAMES, "uColor"];
+console.log(TinyMusic);
 
 const gameWidth = 2;
 const cameraPos = vec3.create();

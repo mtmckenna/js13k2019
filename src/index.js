@@ -10,8 +10,9 @@ import {
   randomIntBetween,
 } from "./webgl-helpers";
 import { UNIFORM_NAMES } from "./models";
-import Missile from "./missile";
+import Dome from "./dome";
 import Explosion from "./explosion";
+import Missile from "./missile";
 import Moon from "./moon";
 
 import "./index.css";
@@ -104,7 +105,10 @@ mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1, 0.1, 0.1]);
 let dotPositionBuffer = gl.createBuffer();
 
 const moon = new Moon(game, [0, 0, 0]);
+// const dome = new Dome(game, [townLocations[1]]);
+const dome = new Dome(game, [0, -1, 0]);
 game.scenary.push(moon);
+game.scenary.push(dome);
 
 configurePrograms(gl);
 
@@ -330,7 +334,8 @@ function newProjectionMatrix() {
 }
 
 function configurePrograms(gl) {
+  Dome.configureProgram(gl);
+  Explosion.configureProgram(gl);
   Moon.configureProgram(gl);
   Missile.configureProgram(gl);
-  Explosion.configureProgram(gl);
 }

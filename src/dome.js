@@ -12,6 +12,7 @@ import { UNIFORM_NAMES } from "./models";
 
 const DOME_UNIFORM_NAMES = [
   ...UNIFORM_NAMES,
+  "normalMatrix",
   "uColor",
   "uLightPosition",
   "uKd",
@@ -36,7 +37,6 @@ export default class Dome {
     positionBuffer = gl.createBuffer();
     uvBuffer = gl.createBuffer();
     indexBuffer = gl.createBuffer();
-    initVertexBuffers(gl);
   }
 
   constructor(game, position) {
@@ -48,29 +48,43 @@ export default class Dome {
     this.dead = false;
     this.collidable = true;
     this.modelMatrix = mat4.create();
+    this.normalMatrix = mat4.create();
     this.tempMatrix = mat4.create();
-    this.radius = 0.25;
+    this.radius = 1;
+    this.rotation = 0;
 
+    this.initVertexBuffers();
     this.update();
   }
 
   update(time) {
-    const { modelMatrix, tempMatrix } = this;
+    const { modelMatrix, normalMatrix, tempMatrix } = this;
+    const { viewMatrix } = this.game;
+    this.rotation += 0.1;
     const scale = this.radius * 2;
+    const modelViewMatrix = mat4.create();
     mat4.identity(modelMatrix);
     mat4.identity(tempMatrix);
-    mat4.translate(tempMatrix, modelMatrix, [this.position[0], this.position[1], 0]);
+    mat4.identity(normalMatrix);
+
+    this.position2 = 4 * Math.sin(time/1000) / 2 - 2;
+    mat4.translate(tempMatrix, modelMatrix, [this.position[0], this.position[1] + this.position2, this.position[2]]);
+    // mat4.rotate(tempMatrix, tempMatrix, this.rotation, [0, 1, 1]);
     mat4.scale(tempMatrix, tempMatrix, [scale, scale, scale]);
     mat4.copy(modelMatrix, tempMatrix);
+    mat4.multiply(modelViewMatrix, viewMatrix, modelMatrix);
+    mat4.invert(normalMatrix, modelViewMatrix);
+    mat4.transpose(normalMatrix, normalMatrix);
+
   }
 
   draw(time) {
-    const { gl, modelMatrix } = this;
+    const { gl, modelMatrix, normalMatrix } = this;
     const { viewMatrix, projectionMatrix } = this.game;
     gl.useProgram(program);
     configureBuffer(gl, program, normalBuffer, normalData, 3, "aNormal");
     setPosition(gl, program, positionBuffer, vertexPositionData);
-    setUvs(gl, program, uvBuffer, textureCoordData);
+    // setUvs(gl, program, uvBuffer, textureCoordData);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
@@ -78,29 +92,20 @@ export default class Dome {
     gl.uniform3f(program.uniformsCache["uColor"], 1.0, 0.0, 0.0);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
+    gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
-    gl.uniform4fv(program.uniformsCache["uLightPosition"], [0.0, -2.0, -5.0, 1.0]);
+    gl.uniform4fv(program.uniformsCache["uLightPosition"], [-0.1, -0.1, -0.1, 1.0]);
     gl.uniform3fv(program.uniformsCache["uKd"], [0.9, 0.5, 0.3]);
     gl.uniform3fv(program.uniformsCache["uLd"], [1.0, 1.0, 1.0]);
 
     gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
   }
-}
 
-function configureProgram(gl) {
-  return programFromCompiledShadersAndUniformNames(
-    gl,
-    VERTEX_SHADER,
-    FRAGMENT_SHADER,
-    DOME_UNIFORM_NAMES
-  );
-}
-
-// https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
-function initVertexBuffers(gl) {
-  const latitudeBands = 50;
-  const longitudeBands = 50;
-  const radius = 1;
+  // https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
+  initVertexBuffers() {
+  const { radius } = this;
+  const latitudeBands = 3;
+  const longitudeBands = 3;
 
   // Calculate sphere vertex positions, normals, and texture coordinates.
   for (let latNumber = 0; latNumber <= latitudeBands; ++latNumber) {
@@ -153,4 +158,14 @@ function initVertexBuffers(gl) {
   normalData = new Float32Array(normalData);
   textureCoordData = new Float32Array(textureCoordData);
   indexData = new Uint16Array(indexData);
+}
+}
+
+function configureProgram(gl) {
+  return programFromCompiledShadersAndUniformNames(
+    gl,
+    VERTEX_SHADER,
+    FRAGMENT_SHADER,
+    DOME_UNIFORM_NAMES
+  );
 }

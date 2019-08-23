@@ -106,7 +106,8 @@ let dotPositionBuffer = gl.createBuffer();
 
 const moon = new Moon(game, [0, 0, 0]);
 // const dome = new Dome(game, [townLocations[1]]);
-const dome = new Dome(game, [0, -1, 0]);
+// const dome = new Dome(game, townLocations[1]);
+const dome = new Dome(game, [0, -1, 2]);
 game.scenary.push(moon);
 game.scenary.push(dome);
 

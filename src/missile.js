@@ -54,7 +54,7 @@ export default class Missile {
     const explodeTime = vec3.distance(this.position, this.destination) / this.speed + launchTime;
     this.times = { start: launchTime, explode: explodeTime, end: explodeTime + FADE_TIME };
     this.vertices = TRAIL;
-    this.radius = 0.01;
+    this.radius = 0.1;
     this.percentDone = 0;
 
     this.modelMatrix = mat4.create();
@@ -63,7 +63,7 @@ export default class Missile {
     const transMat = mat4.create();
 
     const distance = vec3.distance(this.destination, this.position);
-    mat4.scale(scaleMat, this.modelMatrix, [1, distance, 1]);
+    mat4.scale(scaleMat, this.modelMatrix, [10, distance, 10]);
     mat4.translate(transMat, this.modelMatrix, [this.position[0], this.position[1], 0]);
     mat4.rotate(rotMat, this.modelMatrix, this.angle, [0, 0, 1]);
     mat4.multiply(this.modelMatrix, rotMat, scaleMat);

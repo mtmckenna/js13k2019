@@ -39,7 +39,7 @@ document.body.addEventListener("touchend", fireMissile, false);
 const DOT_UNIFORM_NAMES = [...UNIFORM_NAMES, "uColor"];
 console.log(TinyMusic);
 
-const gameWidth = 2;
+const gameWidth = 20;
 const cameraPos = vec3.create();
 const lookAtPos = vec3.create();
 const dimensions = [-1, -1];
@@ -51,10 +51,10 @@ const viewMatrix = newViewMatrix();
 const projectionMatrix = newProjectionMatrix();
 const viewProjectionMatrix = mat4.create();
 const inverseViewProjectionMatrix = mat4.create();
-const GOOD_MISSILE_SPEED = 0.0019;
-const BAD_MISSILE_SPEED = 0.00025;
-const GOOD_MISSILE_SHAKE_AMOUNT = 0.009;
-const BAD_MISSILE_SHAKE_AMOUNT = 0.03;
+const GOOD_MISSILE_SPEED = 0.019;
+const BAD_MISSILE_SPEED = 0.0025;
+const GOOD_MISSILE_SHAKE_AMOUNT = 0.09;
+const BAD_MISSILE_SHAKE_AMOUNT = 0.3;
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -80,6 +80,8 @@ mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+gl.enable(gl.CULL_FACE);
+gl.cullFace(gl.FRONT);
 
 let dotProgram = programFromCompiledShadersAndUniformNames(
   gl,
@@ -88,26 +90,26 @@ let dotProgram = programFromCompiledShadersAndUniformNames(
   DOT_UNIFORM_NAMES
 );
 
-const townLocations = [[-gameWidth + .2, 0, 0], [0, 0, 0], [gameWidth - .2, -0.1, 0]];
+const townLocations = [[-gameWidth + 2, -4.5, 0], [0, -4.5, 0], [gameWidth - 2, -5, 0]];
 
 let dotModelMatrixLeft = mat4.create();
 mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, townLocations[0]);
-mat4.scale(dotModelMatrixLeft, dotModelMatrixLeft, [0.1, 0.1, 0.1]);
+mat4.scale(dotModelMatrixLeft, dotModelMatrixLeft, [1, 1, 1]);
 
 let dotModelMatrix = mat4.create();
 mat4.translate(dotModelMatrix, dotModelMatrix, townLocations[1]);
-mat4.scale(dotModelMatrix, dotModelMatrix, [0.1, 0.1, 0.1]);
+mat4.scale(dotModelMatrix, dotModelMatrix, [1, 1, 1]);
 
 let dotModelMatrixRight = mat4.create();
 mat4.translate(dotModelMatrixRight, dotModelMatrixRight, townLocations[2]);
-mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [0.1, 0.1, 0.1]);
+mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [1, 1, 1]);
 
 let dotPositionBuffer = gl.createBuffer();
 
 const moon = new Moon(game, [0, 0, 0]);
 // const dome = new Dome(game, [townLocations[1]]);
 // const dome = new Dome(game, townLocations[1]);
-const dome = new Dome(game, [0, -1, 2]);
+const dome = new Dome(game, townLocations[1]);
 game.scenary.push(moon);
 game.scenary.push(dome);
 
@@ -188,7 +190,7 @@ function update(time) {
   }
 
   game.clickCoords.forEach((coords) => game.drawables.push(
-    new Missile(game, time, [0, 0, 0], coords, true, GOOD_MISSILE_SPEED)
+    new Missile(game, time, townLocations[1], coords, true, GOOD_MISSILE_SPEED)
     ));
   game.clickCoords = [];
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);

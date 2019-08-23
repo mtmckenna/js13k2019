@@ -50,7 +50,7 @@ export default class Dome {
     this.modelMatrix = mat4.create();
     this.normalMatrix = mat4.create();
     this.tempMatrix = mat4.create();
-    this.radius = 1;
+    this.radius = 1.5;
     this.rotation = 0;
 
     this.initVertexBuffers();
@@ -60,22 +60,26 @@ export default class Dome {
   update(time) {
     const { modelMatrix, normalMatrix, tempMatrix } = this;
     const { viewMatrix } = this.game;
-    this.rotation += 0.1;
+    // this.rotation += 0.01;
     const scale = this.radius * 2;
     const modelViewMatrix = mat4.create();
     mat4.identity(modelMatrix);
     mat4.identity(tempMatrix);
     mat4.identity(normalMatrix);
 
-    this.position2 = 4 * Math.sin(time/1000) / 2 - 2;
-    mat4.translate(tempMatrix, modelMatrix, [this.position[0], this.position[1] + this.position2, this.position[2]]);
-    // mat4.rotate(tempMatrix, tempMatrix, this.rotation, [0, 1, 1]);
+    this.position2 = 24 * Math.sin(time/800) / 2 - 1;
+    // mat4.translate(tempMatrix, modelMatrix, [this.position[0] + this.position2, this.position[1] + this.position2, this.position[2]]);
+    mat4.translate(tempMatrix, modelMatrix, this.position);
+    // mat4.rotate(tempMatrix, tempMatrix, this.rotation, [0, 0, 1]);
+    mat4.rotate(tempMatrix, tempMatrix, Math.PI/2, [0, 1, 0]);
+    mat4.rotate(tempMatrix, tempMatrix, Math.PI/2, [1, 0, 0]);
+    // mat4.rotate(tempMatrix, tempMatrix, Math.PI/4, [1, 0, 0]);
     mat4.scale(tempMatrix, tempMatrix, [scale, scale, scale]);
     mat4.copy(modelMatrix, tempMatrix);
-    mat4.multiply(modelViewMatrix, viewMatrix, modelMatrix);
+    // mat4.multiply(modelViewMatrix, viewMatrix, modelMatrix);
+    mat4.multiply(modelViewMatrix, modelMatrix, viewMatrix);
     mat4.invert(normalMatrix, modelViewMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
-
   }
 
   draw(time) {
@@ -94,8 +98,10 @@ export default class Dome {
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
-    gl.uniform4fv(program.uniformsCache["uLightPosition"], [-0.1, -0.1, -0.1, 1.0]);
-    gl.uniform3fv(program.uniformsCache["uKd"], [0.9, 0.5, 0.3]);
+    gl.uniform4fv(program.uniformsCache["uLightPosition"], [-0, 100, 0, 1.0]);
+    // gl.uniform4fv(program.uniformsCache["uLightPosition"], [this.position[0], this.position[1], this.position[2], 1.0]);
+
+    gl.uniform3fv(program.uniformsCache["uKd"], [1.0, 0.84, 0.0]);
     gl.uniform3fv(program.uniformsCache["uLd"], [1.0, 1.0, 1.0]);
 
     gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
@@ -103,9 +109,9 @@ export default class Dome {
 
   // https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
   initVertexBuffers() {
-  const { radius } = this;
-  const latitudeBands = 3;
-  const longitudeBands = 3;
+  const radius = 1.0;
+  const latitudeBands = 15;
+  const longitudeBands = 15;
 
   // Calculate sphere vertex positions, normals, and texture coordinates.
   for (let latNumber = 0; latNumber <= latitudeBands; ++latNumber) {
@@ -114,7 +120,7 @@ export default class Dome {
     let cosTheta = Math.cos(theta);
 
     for (let longNumber = 0; longNumber <= longitudeBands; ++longNumber) {
-      let phi = longNumber * 2 * Math.PI / longitudeBands;
+      let phi = longNumber * 2 * Math.PI / longitudeBands / 2;
       let sinPhi = Math.sin(phi);
       let cosPhi = Math.cos(phi);
 

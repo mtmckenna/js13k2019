@@ -45,7 +45,7 @@ export default class Explosion {
     this.collidable = true;
     this.goodFloat = good ? 1.0 : 0.0;
     this.modelMatrix = mat4.create();
-    this.startingSize = 0.05;
+    this.startingSize = 0.5;
     this.currentSize = this.startingSize;
     this.radius = this.currentSize / 2;
     this.randomFloat = randomFloatBetween(0, 1);
@@ -58,7 +58,7 @@ export default class Explosion {
     if (time > this.times.startFade) this.collidable = false;
 
     const { modelMatrix } = this;
-    this.currentSize += .005;
+    this.currentSize += .05;
     this.radius = this.currentSize / 2;
 
     mat4.identity(modelMatrix);

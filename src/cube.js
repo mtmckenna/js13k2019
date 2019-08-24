@@ -3,20 +3,15 @@ import {
   configureBuffer,
   programFromCompiledShadersAndUniformNames,
   setPosition,
-  setUvs,
 } from "./webgl-helpers";
 
-import VERTEX_SHADER from "./shaders/dome-vertex.glsl";
-import FRAGMENT_SHADER from "./shaders/dome-fragment.glsl";
-import { UNIFORM_NAMES } from "./models";
+import VERTEX_SHADER from "./shaders/cube-vertex.glsl";
+import FRAGMENT_SHADER from "./shaders/cube-fragment.glsl";
+import { CUBE, CUBE_INDICES, UNIFORM_NAMES } from "./models";
 
 const DOME_UNIFORM_NAMES = [
   ...UNIFORM_NAMES,
   "normalMatrix",
-  "uColor",
-  "uLightPosition",
-  "uKd",
-  "uLd",
 ];
 
 let vertexPositionData = [];
@@ -26,21 +21,19 @@ let indexData = [];
 let program = null;
 let normalBuffer = null;
 let positionBuffer = null;
-let uvBuffer = null;
 let indexBuffer = null;
 
-export default class Dome {
+export default class Cube {
 
   static configureProgram(gl) {
     program = configureProgram(gl);
     normalBuffer = gl.createBuffer();
     positionBuffer = gl.createBuffer();
-    uvBuffer = gl.createBuffer();
     indexBuffer = gl.createBuffer();
   }
 
   constructor(game, position) {
-    this.type = "dome";
+    this.type = "cube";
     this.game = game;
     this.gl = this.game.gl;
     this.position = position;
@@ -71,8 +64,8 @@ export default class Dome {
     // mat4.translate(tempMatrix, modelMatrix, [this.position[0] + this.position2, this.position[1] + this.position2, this.position[2]]);
     mat4.translate(tempMatrix, modelMatrix, this.position);
     // mat4.rotate(tempMatrix, tempMatrix, this.rotation, [0, 0, 1]);
-    // mat4.rotate(tempMatrix, tempMatrix, -Math.PI/2, [0, 0, 1]);
-    mat4.rotate(tempMatrix, tempMatrix, -Math.PI/2, [1, 0, 0]);
+    mat4.rotate(tempMatrix, tempMatrix, Math.PI/2, [0, 1, 0]);
+    mat4.rotate(tempMatrix, tempMatrix, Math.PI/2, [1, 0, 0]);
     // mat4.rotate(tempMatrix, tempMatrix, Math.PI/4, [1, 0, 0]);
     mat4.scale(tempMatrix, tempMatrix, [scale, scale, scale]);
     mat4.copy(modelMatrix, tempMatrix);
@@ -98,7 +91,7 @@ export default class Dome {
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
-    gl.uniform4fv(program.uniformsCache["uLightPosition"], [0, 100, 0, 1.0]);
+    gl.uniform4fv(program.uniformsCache["uLightPosition"], [-0, 100, 0, 1.0]);
     // gl.uniform4fv(program.uniformsCache["uLightPosition"], [this.position[0], this.position[1], this.position[2], 1.0]);
 
     gl.uniform3fv(program.uniformsCache["uKd"], [1.0, 0.84, 0.0]);

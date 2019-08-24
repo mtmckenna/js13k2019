@@ -43,7 +43,7 @@ export default class Moon {
     const scale = this.radius * 2;
     mat4.identity(modelMatrix);
     mat4.identity(tempMatrix);
-    mat4.translate(tempMatrix, modelMatrix, [this.position[0], this.position[1], 0]);
+    mat4.translate(tempMatrix, modelMatrix, this.position);
     mat4.scale(tempMatrix, tempMatrix, [scale, scale, scale]);
     mat4.copy(modelMatrix, tempMatrix);
   }

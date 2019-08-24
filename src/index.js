@@ -43,9 +43,9 @@ const gameWidth = 20;
 const cameraPos = vec3.create();
 const lookAtPos = vec3.create();
 const dimensions = [-1, -1];
-const nearPlane = 1.0 + EPSILON;
+const nearPlane = 0.1 + EPSILON;
 const farPlane = 100.0;
-const fov = 30;
+const fov = 30 * Math.PI / 180;
 const cameraModelMatrix = mat4.create();
 const viewMatrix = newViewMatrix();
 const projectionMatrix = newProjectionMatrix();
@@ -80,8 +80,11 @@ mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-gl.enable(gl.CULL_FACE);
-gl.cullFace(gl.FRONT);
+// gl.enable(gl.DEPTH_TEST);
+// gl.depthFunc(gl.NEVER);
+
+// gl.enable(gl.CULL_FACE);
+// gl.cullFace(gl.BACK);
 
 let dotProgram = programFromCompiledShadersAndUniformNames(
   gl,
@@ -90,7 +93,7 @@ let dotProgram = programFromCompiledShadersAndUniformNames(
   DOT_UNIFORM_NAMES
 );
 
-const townLocations = [[-gameWidth + 2, -4.5, 0], [0, -4.5, 0], [gameWidth - 2, -5, 0]];
+const townLocations = [[-gameWidth + 2, 0, 0], [0, 0, 0], [gameWidth - 2, 5, 0]];
 
 let dotModelMatrixLeft = mat4.create();
 mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, townLocations[0]);
@@ -107,8 +110,7 @@ mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [1, 1, 1]);
 let dotPositionBuffer = gl.createBuffer();
 
 const moon = new Moon(game, [0, 0, 0]);
-// const dome = new Dome(game, [townLocations[1]]);
-// const dome = new Dome(game, townLocations[1]);
+
 const dome = new Dome(game, townLocations[1]);
 game.scenary.push(moon);
 game.scenary.push(dome);
@@ -240,20 +242,20 @@ function checkCollisions(time) {
 function fireMissile(event) {
   let touch = event;
   if (event.touches) touch = event.changedTouches[0];
-  const worldCoords = unprojectPoint([touch.clientX, touch.clientY], inverseViewProjectionMatrix);
+  const worldCoords = unprojectPoint([touch.clientX, touch.clientY]);
   game.clickCoords.push([worldCoords[0], worldCoords[1], 0]);
 }
 
-function unprojectPoint(point, inverseVPMatrix) {
+  function unprojectPoint(point) {
   const screenX = point[0];
   const screenY = point[1];
   const x = (screenX / canvas.clientWidth) * 2 - 1;
   const y = -(screenY / canvas.clientHeight) * 2 + 1;
 
-  const coords = [x, y, 1];
+  const coords = [x, y, 0];
   const worldCoords = vec3.create();
 
-  vec3.transformMat4(worldCoords, coords, inverseVPMatrix);
+  vec3.transformMat4(worldCoords, coords, inverseViewProjectionMatrix);
   vec3.subtract(worldCoords, worldCoords, cameraPos);
   vec3.normalize(worldCoords, worldCoords);
   const distance = -cameraPos[2] / worldCoords[2];
@@ -266,8 +268,12 @@ function unprojectPoint(point, inverseVPMatrix) {
 }
 
 function resetCamera() {
-  vec3.set(cameraPos, 0, 0, -1);
-  vec3.set(lookAtPos, 0, 0, 1);
+  vec3.set(cameraPos, 0, 0, 1);
+  vec3.set(lookAtPos, 0, 0, -1);
+  updateViewProjection();
+}
+
+function updateViewProjection() {
   mat4.copy(projectionMatrix, newProjectionMatrix());
   mat4.copy(viewMatrix, newViewMatrix());
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
@@ -280,46 +286,40 @@ function resize() {
   const width = canvas.clientWidth;
   const height = canvas.clientHeight;
 
-  // Return if dimensions haven't changed
   if (dimensions[0] === width && dimensions[1] === height) return;
   gl.viewport(0, 0, width, height);
   resetCamera();
   dimensions[0] = width;
   dimensions[1] = height;
 
-  const bounds = unprojectPoint([width, height], inverseViewProjectionMatrix);
-  const z = -Math.max(gameWidth / bounds[0], nearPlane + screenShakeZFudge);
-
   // Size the horizontal bounds by adjusting z postion of the camera
+  const bounds = unprojectPoint([width, height]);
+  const z = gameWidth / bounds[0];
   vec3.set(cameraPos, 0, 0, z);
-  vec3.set(lookAtPos, 0, 0, 1);
-  mat4.copy(projectionMatrix, newProjectionMatrix());
-  mat4.copy(viewMatrix, newViewMatrix());
-
-  mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
-  mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
+  vec3.set(lookAtPos, 0, 0, -1);
+  updateViewProjection();
 
   // Move 0 on the y-axis to the bottom of the screen
   const bottomOfWorld = unprojectPoint([width, height], inverseViewProjectionMatrix);
   game.bounds.width = bottomOfWorld[0] * 2;
   game.bounds.height = bottomOfWorld[1] * 2;
-  bottomOfWorld[1] = -bottomOfWorld[1] + .2;
+  bottomOfWorld[1] = -bottomOfWorld[1] + 0.05 * bottomOfWorld[1];
+  console.log(bottomOfWorld)
+  vec3.set(cameraPos, cameraPos[0], bottomOfWorld[1], cameraPos[2]);
+  vec3.add(lookAtPos, cameraPos, [0, 0, -1]);
+  updateViewProjection();
 
-  vec3.set(game.camera.staticPos, 0, bottomOfWorld[1], z);
-  vec3.copy(cameraPos, game.camera.staticPos);
-
-  vec3.set(lookAtPos, 0, game.camera.staticPos[1], 1);
-  mat4.copy(projectionMatrix, newProjectionMatrix());
-  mat4.copy(viewMatrix, newViewMatrix());
-  mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
-  mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 
   // Place moon
   const radius = gameWidth * .1;
   moon.radius = radius;
-  const topRightOfWorld = unprojectPoint([width * .9, height * .1], inverseViewProjectionMatrix);
-  topRightOfWorld[2] = 1; // Move moon behind stuff
+  const topRightOfWorld = unprojectPoint([width * .9, height * .1]);
   vec3.copy(moon.position, topRightOfWorld);
+
+  mat4.copy(projectionMatrix, newProjectionMatrix());
+  mat4.copy(viewMatrix, newViewMatrix());
+  mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
+  mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 }
 
 function newViewMatrix() {

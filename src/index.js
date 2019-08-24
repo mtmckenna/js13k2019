@@ -19,7 +19,6 @@ import "./index.css";
 
 const game = {};
 const EPSILON = 0.0001;
-const screenShakeZFudge = 0.2;
 const canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
 
@@ -110,7 +109,6 @@ mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [1, 1, 1]);
 let dotPositionBuffer = gl.createBuffer();
 
 const moon = new Moon(game, [0, 0, 0]);
-
 const dome = new Dome(game, townLocations[1]);
 game.scenary.push(moon);
 game.scenary.push(dome);
@@ -144,7 +142,7 @@ function shakeScreen(amount) {
 }
 
 function updateShake(time) {
-  const { shakeInfo } = game;
+  const { shakeInfo, camera } = game;
   const { amplitude, dir } = shakeInfo;
   vec3.scale(amplitude, amplitude, 0.9);
 
@@ -303,18 +301,15 @@ function resize() {
   const bottomOfWorld = unprojectPoint([width, height], inverseViewProjectionMatrix);
   game.bounds.width = bottomOfWorld[0] * 2;
   game.bounds.height = bottomOfWorld[1] * 2;
-  bottomOfWorld[1] = -bottomOfWorld[1] + 0.05 * bottomOfWorld[1];
-  console.log(bottomOfWorld)
-  vec3.set(cameraPos, cameraPos[0], bottomOfWorld[1], cameraPos[2]);
-  vec3.add(lookAtPos, cameraPos, [0, 0, -1]);
+  // vec3.set(cameraPos, 0, -bottomOfWorld[1], z);
+  vec3.set(lookAtPos, 0, -bottomOfWorld[1], -1);
   updateViewProjection();
-
 
   // Place moon
   const radius = gameWidth * .1;
   moon.radius = radius;
   const topRightOfWorld = unprojectPoint([width * .9, height * .1]);
-  vec3.copy(moon.position, topRightOfWorld);
+  vec3.set(moon.position, topRightOfWorld[0], topRightOfWorld[1], 0);;
 
   mat4.copy(projectionMatrix, newProjectionMatrix());
   mat4.copy(viewMatrix, newViewMatrix());

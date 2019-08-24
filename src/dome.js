@@ -57,14 +57,12 @@ export default class Dome {
   update(time) {
     const { modelMatrix, normalMatrix, tempMatrix } = this;
     const { viewMatrix } = this.game;
-    // this.rotation += 0.01;
     const scale = this.radius * 2;
     const modelViewMatrix = mat4.create();
     mat4.identity(modelMatrix);
     mat4.identity(tempMatrix);
     mat4.identity(normalMatrix);
 
-    this.position2 = 24 * Math.sin(time / 800) / 2 - 1;
     mat4.translate(tempMatrix, modelMatrix, this.position);
     mat4.rotate(tempMatrix, tempMatrix, -Math.PI / 2, [1, 0, 0]);
     mat4.scale(tempMatrix, tempMatrix, [scale, scale, scale]);

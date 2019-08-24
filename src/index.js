@@ -241,13 +241,12 @@ function checkCollisions(time) {
           otherDrawable.type === "missile" &&
           otherDrawable.good === false
         ) {
-          // otherDrawable.explode(time);
+          otherDrawable.explode(time);
         } else if (
           drawable.type === "dome" &&
           otherDrawable.type === "missile" &&
           otherDrawable.good === false
         ) {
-          console.log("dome expl")
           otherDrawable.explode(time);
         }
 

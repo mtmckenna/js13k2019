@@ -8,7 +8,6 @@ uniform mat4 viewMatrix;
 varying highp vec3 vLightIntensity;
 
 void main() {
-  gl_FragColor = vec4(vLightIntensity, 0.5);
-  // gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+  gl_FragColor = vec4(vLightIntensity, 0.8);
 }
 

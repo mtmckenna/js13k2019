@@ -114,6 +114,7 @@ export default class Missile {
     this.times.explode = time;
     this.times.end = time + FADE_TIME;
     this.exploded = true;
+    this.collidable = false;
   }
 }
 

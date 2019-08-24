@@ -17,6 +17,7 @@ const DOME_UNIFORM_NAMES = [
   "uLightPosition",
   "uKd",
   "uLd",
+  "vUvs",
 ];
 
 let program = null;
@@ -80,7 +81,7 @@ export default class Dome {
     gl.useProgram(program);
     configureBuffer(gl, program, normalBuffer, normalData, 3, "aNormal");
     setPosition(gl, program, positionBuffer, vertexPositionData);
-    // setUvs(gl, program, uvBuffer, textureCoordData);
+    // setUvs(gl, program, uvBuffer, this.textureCoordData);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
@@ -106,8 +107,8 @@ export default class Dome {
     const indexData = [];
 
     const radius = 0.5;
-    const latitudeBands = 15;
-    const longitudeBands = 15;
+    const latitudeBands = 10;
+    const longitudeBands = 10;
 
     // Calculate sphere vertex positions, normals, and texture coordinates.
     for (let latNumber = 0; latNumber <= latitudeBands; ++latNumber) {
@@ -160,6 +161,7 @@ export default class Dome {
     this.normalData = new Float32Array(normalData);
     this.textureCoordData = new Float32Array(textureCoordData);
     this.indexData = new Uint16Array(indexData);
+    console.log(this.textureCoordData)
   }
 }
 

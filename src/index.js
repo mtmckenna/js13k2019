@@ -3,8 +3,6 @@
 import TinyMusic from "./lib/tinymusic";
 import { mat4, vec3 } from "./lib/gl-matrix";
 import {
-  programFromCompiledShadersAndUniformNames,
-  setPosition,
   oneOrMinusOne,
   randomFloatBetween,
   randomIntBetween,
@@ -28,14 +26,10 @@ const gl = canvas.getContext("webgl", { premultipliedAlpha: true });
 canvas.addEventListener("webglcontextlost", (event) => event.preventDefault(), false);
 canvas.addEventListener("webglcontextrestored", () => configurePrograms(gl), false);
 
-import VERTEX_SHADER from "./shaders/vertex.glsl";
-import DOT_FRAGMENT_SHADER from "./shaders/dot-fragment.glsl";
-import { QUAD, TRAIL } from "./models";
 
 document.body.addEventListener("pointerup", fireMissile, false);
 document.body.addEventListener("touchend", fireMissile, false);
 
-const DOT_UNIFORM_NAMES = [...UNIFORM_NAMES, "uColor"];
 console.log(TinyMusic);
 
 const gameWidth = 20;
@@ -57,6 +51,7 @@ const GREEN = [0.2, 0.9, 0.2];
 const RED = [0.9, 0.2, 0.2];
 const BLUE = [0.2, 0.2, 0.9];
 const GOLD = [1.0, 0.84, 0.0];
+const PURPLE = [0.6, 0.2, 0.8];
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -88,61 +83,19 @@ gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 // gl.enable(gl.CULL_FACE);
 // gl.cullFace(gl.BACK);
 
-let dotProgram = programFromCompiledShadersAndUniformNames(
-  gl,
-  VERTEX_SHADER,
-  DOT_FRAGMENT_SHADER,
-  DOT_UNIFORM_NAMES
-);
-
 const townLocations = [[-gameWidth + 4, 1, 0], [0, 1, 0], [gameWidth - 4, 1, 0]];
 
-let dotModelMatrixLeft = mat4.create();
-mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, townLocations[0]);
-mat4.scale(dotModelMatrixLeft, dotModelMatrixLeft, [1, 1, 1]);
-
-let dotModelMatrix = mat4.create();
-mat4.translate(dotModelMatrix, dotModelMatrix, townLocations[1]);
-mat4.scale(dotModelMatrix, dotModelMatrix, [1, 1, 1]);
-
-let dotModelMatrixRight = mat4.create();
-mat4.translate(dotModelMatrixRight, dotModelMatrixRight, townLocations[2]);
-mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [1, 1, 1]);
-
-let dotPositionBuffer = gl.createBuffer();
 
 const moon = new Moon(game, [0, 0, 0]);
-const dome1 = new Dome(game, [townLocations[0][0], townLocations[0][1], townLocations[0][2] - 2], BLUE);
+const dome1 = new Dome(game, [townLocations[0][0], townLocations[0][1], townLocations[0][2] - 2], PURPLE);
 const dome2 = new Dome(game, [townLocations[1][0], townLocations[1][1], townLocations[1][2] - 2], GREEN);
 const dome3 = new Dome(game, [townLocations[2][0], townLocations[2][1], townLocations[2][2] - 2], BLUE);
 game.scenary.push(moon);
 game.drawables.push(dome1);
 game.drawables.push(dome2);
 game.drawables.push(dome3);
-// game.scenary.push(dome1);
-// game.scenary.push(dome2);
-// game.scenary.push(dome3);
 
 configurePrograms(gl);
-
-// function drawOrigin() {
-//   gl.useProgram(dotProgram);
-//   setPosition(gl, dotProgram, dotPositionBuffer, TRAIL);
-//   gl.uniform1f(dotProgram.uniformsCache["uTime"], 0);
-//   gl.uniform3f(dotProgram.uniformsCache["uColor"], ...GOLD);
-//   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrix);
-//   gl.uniformMatrix4fv(dotProgram.uniformsCache["viewMatrix"], false, viewMatrix);
-//   gl.uniformMatrix4fv(dotProgram.uniformsCache["projectionMatrix"], false, projectionMatrix);
-//   gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
-
-//   gl.uniform3f(dotProgram.uniformsCache["uColor"], ...GREEN);
-//   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrixLeft);
-//   gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
-
-//   gl.uniform3f(dotProgram.uniformsCache["uColor"], ...BLUE);
-//   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrixRight);
-//   gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
-// }
 
 requestAnimationFrame(update);
 
@@ -231,7 +184,7 @@ function checkCollisions(time) {
   game.drawables.forEach((drawable) => {
     if (!drawable.collidable) return;
     game.drawables.forEach((otherDrawable) => {
-      if (!drawable.collidable) return;
+      if (!otherDrawable.collidable) return;
       if (drawable === otherDrawable) return;
 
       const distance = vec3.distance(drawable.position, otherDrawable.collisionPosition);
@@ -247,6 +200,7 @@ function checkCollisions(time) {
           otherDrawable.type === "missile" &&
           otherDrawable.good === false
         ) {
+          shakeScreen(BAD_MISSILE_SHAKE_AMOUNT);
           otherDrawable.explode(time);
         }
 

@@ -43,7 +43,7 @@ const cameraPos = vec3.create();
 const lookAtPos = vec3.create();
 const dimensions = [-1, -1];
 const nearPlane = 0.1 + EPSILON;
-const farPlane = 100.0;
+const farPlane = 400.0;
 const fov = 30 * Math.PI / 180;
 const cameraModelMatrix = mat4.create();
 const viewMatrix = newViewMatrix();
@@ -54,6 +54,10 @@ const GOOD_MISSILE_SPEED = 0.019;
 const BAD_MISSILE_SPEED = 0.0025;
 const GOOD_MISSILE_SHAKE_AMOUNT = 0.09;
 const BAD_MISSILE_SHAKE_AMOUNT = 0.3;
+const GREEN = [0.2, 0.9, 0.2];
+const RED = [0.9, 0.2, 0.2];
+const BLUE = [0.2, 0.2, 0.9];
+const GOLD = [1.0, 0.84, 0.0];
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -92,7 +96,7 @@ let dotProgram = programFromCompiledShadersAndUniformNames(
   DOT_UNIFORM_NAMES
 );
 
-const townLocations = [[-gameWidth + 2, 0, 0], [0, 0, 0], [gameWidth - 2, 5, 0]];
+const townLocations = [[-gameWidth + 4, 0, 0], [0, 0, 0], [gameWidth - 4, 0, 0]];
 
 let dotModelMatrixLeft = mat4.create();
 mat4.translate(dotModelMatrixLeft, dotModelMatrixLeft, townLocations[0]);
@@ -109,9 +113,13 @@ mat4.scale(dotModelMatrixRight, dotModelMatrixRight, [1, 1, 1]);
 let dotPositionBuffer = gl.createBuffer();
 
 const moon = new Moon(game, [0, 0, 0]);
-const dome = new Dome(game, townLocations[1]);
+const dome1 = new Dome(game, townLocations[0], GREEN);
+const dome2 = new Dome(game, townLocations[1], GOLD);
+const dome3 = new Dome(game, townLocations[2], BLUE);
 game.scenary.push(moon);
-game.scenary.push(dome);
+game.scenary.push(dome1);
+game.scenary.push(dome2);
+game.scenary.push(dome3);
 
 configurePrograms(gl);
 
@@ -119,17 +127,17 @@ function drawOrigin() {
   gl.useProgram(dotProgram);
   setPosition(gl, dotProgram, dotPositionBuffer, TRAIL);
   gl.uniform1f(dotProgram.uniformsCache["uTime"], 0);
-  gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.2, 0.9, 0.2);
+  gl.uniform3f(dotProgram.uniformsCache["uColor"], ...GOLD);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrix);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["viewMatrix"], false, viewMatrix);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["projectionMatrix"], false, projectionMatrix);
   gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
 
-  gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.9, 0.2, 0.2);
+  gl.uniform3f(dotProgram.uniformsCache["uColor"], ...GREEN);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrixLeft);
   gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
 
-  gl.uniform3f(dotProgram.uniformsCache["uColor"], 0.2, 0.2, 0.9);
+  gl.uniform3f(dotProgram.uniformsCache["uColor"], ...BLUE);
   gl.uniformMatrix4fv(dotProgram.uniformsCache["modelMatrix"], false, dotModelMatrixRight);
   gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
 }
@@ -292,7 +300,8 @@ function resize() {
 
   // Size the horizontal bounds by adjusting z postion of the camera
   const bounds = unprojectPoint([width, height]);
-  const z = gameWidth / bounds[0];
+  const z = Math.min(gameWidth / bounds[0], farPlane);
+  // console.log(z)
   vec3.set(cameraPos, 0, 0, z);
   vec3.set(lookAtPos, 0, 0, -1);
   updateViewProjection();
@@ -301,7 +310,7 @@ function resize() {
   const bottomOfWorld = unprojectPoint([width, height], inverseViewProjectionMatrix);
   game.bounds.width = bottomOfWorld[0] * 2;
   game.bounds.height = bottomOfWorld[1] * 2;
-  // vec3.set(cameraPos, 0, -bottomOfWorld[1], z);
+  vec3.set(cameraPos, 0, -bottomOfWorld[1], z);
   vec3.set(lookAtPos, 0, -bottomOfWorld[1], -1);
   updateViewProjection();
 

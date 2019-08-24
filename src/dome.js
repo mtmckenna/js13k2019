@@ -35,19 +35,20 @@ export default class Dome {
     indexBuffer = gl.createBuffer();
   }
 
+  get collisionPosition() { return this.position; }
+
   constructor(game, position, color = [1.0, 1.0, 1.0]) {
     this.type = "dome";
     this.game = game;
     this.gl = this.game.gl;
     this.position = position;
-    // this.times = { start: startTime, startFade: startFadeTime, end: startFadeTime + FADE_TIME };
     this.dead = false;
     this.color = color;
     this.collidable = true;
     this.modelMatrix = mat4.create();
     this.normalMatrix = mat4.create();
     this.tempMatrix = mat4.create();
-    this.radius = 1.5;
+    this.radius = 5;
     this.rotation = 0;
 
     this.initVertexBuffers();
@@ -104,7 +105,7 @@ export default class Dome {
     const textureCoordData = [];
     const indexData = [];
 
-    const radius = 1.0;
+    const radius = 0.5;
     const latitudeBands = 15;
     const longitudeBands = 15;
 

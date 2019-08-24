@@ -229,15 +229,28 @@ function draw(time) {
 // TODO: Consider space partioning to make this faster
 function checkCollisions(time) {
   game.drawables.forEach((drawable) => {
-    if (drawable.type !== "explosion") return; // Only explosions can blow up other stuff
+    if (!drawable.collidable) return;
     game.drawables.forEach((otherDrawable) => {
+      if (!drawable.collidable) return;
       if (drawable === otherDrawable) return;
-      if (otherDrawable.type !== "missile") return;
-      if (otherDrawable.good === true) return;
-      if (otherDrawable.collidable === false) return;
-      const distance = vec3.distance(drawable.position, otherDrawable.payloadPosition);
+
+      const distance = vec3.distance(drawable.position, otherDrawable.collisionPosition);
       if (distance < (drawable.radius + otherDrawable.radius)) {
-        otherDrawable.explode(time);
+        if (
+          drawable.type === "explosion" &&
+          otherDrawable.type === "missile" &&
+          otherDrawable.good === false
+        ) {
+          // otherDrawable.explode(time);
+        } else if (
+          drawable.type === "dome" &&
+          otherDrawable.type === "missile" &&
+          otherDrawable.good === false
+        ) {
+          console.log("dome expl")
+          otherDrawable.explode(time);
+        }
+
       }
     })
   });

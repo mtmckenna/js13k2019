@@ -39,10 +39,11 @@ export default class Missile {
     this.gl = this.game.gl;
     this.speed = speed;
     this.position = vec3.create();
-    this.payloadPosition = vec3.create();
+    this.collisionPosition = vec3.create();
     this.destination = vec3.create();
     this.exploded = false;
     this.dead = false;
+    this.collidable = true;
     this.good = good;
     this.goodFloat = good ? 1.0 : 0.0;
     vec3.copy(this.position, position);
@@ -74,7 +75,7 @@ export default class Missile {
     if (time > this.times.end) this.dead = true;
     if (this.exploded) return;
     this.percentDone = Math.min((time - this.times.start) / (this.times.explode - this.times.start), 1);
-    vec3.lerp(this.payloadPosition, this.position, this.destination, this.percentDone);
+    vec3.lerp(this.collisionPosition, this.position, this.destination, this.percentDone);
   }
 
   draw(time) {
@@ -107,7 +108,7 @@ export default class Missile {
 
   explode(time) {
     if (this.exploded) return;
-    const explosion = new Explosion(this.game, time, this.payloadPosition, this.good);
+    const explosion = new Explosion(this.game, time, this.collisionPosition, this.good);
     if (this.percentDone >= 1.0 && !this.good) explosion.collidable = false;
     this.game.drawables.push(explosion);
     this.times.explode = time;

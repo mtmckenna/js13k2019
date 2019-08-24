@@ -33,6 +33,8 @@ export default class Explosion {
     uvBuffer = gl.createBuffer();
   }
 
+  get collisionPosition() { return this.position; }
+
   constructor(game, startTime, position, good = true) {
     this.type = "explosion";
     this.game = game;

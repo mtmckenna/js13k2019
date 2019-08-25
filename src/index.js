@@ -63,6 +63,7 @@ game.scenary = [];
 game.clickCoords = [];
 game.timeLastBadMissileFiredAt = 0;
 game.minTimeBetweenBadMissiles = 1000;
+game.missileSpeedMultiplier = 1.0;
 game.chanceOfBadMisslesFiring = 0.1;
 game.bounds = { width: -1, height: -1 };
 game.camera = { staticPos: vec3.create() };
@@ -146,7 +147,7 @@ function update(time) {
           [launchX, -game.bounds.height, 0.0],
           townToAimAt,
           false,
-          BAD_MISSILE_SPEED
+          BAD_MISSILE_SPEED * game.missileSpeedMultiplier
         )
       );
       game.timeLastBadMissileFiredAt = time;
@@ -154,7 +155,7 @@ function update(time) {
   }
 
   game.clickCoords.forEach((coords) => game.drawables.push(
-    new Missile(game, time, [0, 3.5, 0], coords, true, GOOD_MISSILE_SPEED)
+    new Missile(game, time, [0, 3.5, 0], coords, true, GOOD_MISSILE_SPEED * game.missileSpeedMultiplier)
     ));
   game.clickCoords = [];
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
@@ -273,7 +274,6 @@ function resize() {
   // Size the horizontal bounds by adjusting z postion of the camera
   const bounds = unprojectPoint([width, height]);
   const z = Math.min(gameWidth / bounds[0], farPlane);
-  // console.log(z)
   vec3.set(cameraPos, 0, 0, z);
   vec3.set(lookAtPos, 0, 0, -1);
   updateViewProjection();
@@ -297,6 +297,9 @@ function resize() {
   mat4.copy(viewMatrix, newViewMatrix());
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
   mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
+
+  // Make bad missiles faster the game screen is taller
+  game.missileSpeedMultiplier = Math.abs(game.bounds.height / 25);
 }
 
 function newViewMatrix() {

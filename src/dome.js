@@ -17,8 +17,10 @@ const DOME_UNIFORM_NAMES = [
   "uLightPosition",
   "uKd",
   "uLd",
-  "vUvs",
+  "uHit",
 ];
+
+const HIT_TIME = 200;
 
 let program = null;
 let normalBuffer = null;
@@ -49,8 +51,10 @@ export default class Dome {
     this.modelMatrix = mat4.create();
     this.normalMatrix = mat4.create();
     this.tempMatrix = mat4.create();
-    this.radius = 5;
+    this.radius = 3;
     this.rotation = 0;
+    this.hitFloat = 0.0;
+    this.times = { hitTime: 0 };
 
     this.initVertexBuffers();
     this.update();
@@ -72,6 +76,9 @@ export default class Dome {
     mat4.multiply(modelViewMatrix, modelMatrix, viewMatrix);
     mat4.invert(normalMatrix, modelViewMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
+    if (time - this.times.hitTime > HIT_TIME) {
+      this.hitFloat = 0.0;
+    }
   }
 
   draw(time) {
@@ -81,22 +88,28 @@ export default class Dome {
     gl.useProgram(program);
     configureBuffer(gl, program, normalBuffer, normalData, 3, "aNormal");
     setPosition(gl, program, positionBuffer, vertexPositionData);
-    // setUvs(gl, program, uvBuffer, this.textureCoordData);
+    setUvs(gl, program, uvBuffer, this.textureCoordData);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
 
-    gl.uniform3f(program.uniformsCache["uColor"], 1.0, 0.0, 0.0);
+    gl.uniform1f(program.uniformsCache["uTime"], time);
+    gl.uniform1f(program.uniformsCache["uHit"], this.hitFloat);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
-    gl.uniform4fv(program.uniformsCache["uLightPosition"], [0, 100, 0, 1.0]);
+    gl.uniform4fv(program.uniformsCache["uLightPosition"], [0, 50, 0, 1.0]);
 
     gl.uniform3fv(program.uniformsCache["uKd"], this.color);
     gl.uniform3fv(program.uniformsCache["uLd"], [1.0, 1.0, 1.0]);
 
     gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
+  }
+
+  hit(time) {
+    this.times.hitTime = time;
+    this.hitFloat = 1.0;
   }
 
   // https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
@@ -161,7 +174,6 @@ export default class Dome {
     this.normalData = new Float32Array(normalData);
     this.textureCoordData = new Float32Array(textureCoordData);
     this.indexData = new Uint16Array(indexData);
-    console.log(this.textureCoordData)
   }
 }
 

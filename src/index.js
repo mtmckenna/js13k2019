@@ -45,8 +45,8 @@ const viewProjectionMatrix = mat4.create();
 const inverseViewProjectionMatrix = mat4.create();
 const GOOD_MISSILE_SPEED = 0.019;
 const BAD_MISSILE_SPEED = 0.0025;
-const GOOD_MISSILE_SHAKE_AMOUNT = 1;
-const BAD_MISSILE_SHAKE_AMOUNT = 3;
+const GOOD_MISSILE_SHAKE_AMOUNT = 1.0;
+const BAD_MISSILE_SHAKE_AMOUNT = 3.0;
 const GREEN = [0.2, 0.9, 0.2];
 const RED = [0.9, 0.2, 0.2];
 const BLUE = [0.2, 0.2, 0.9];
@@ -85,7 +85,6 @@ gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
 const townLocations = [[-gameWidth + 4, 1, 0], [0, 1, 0], [gameWidth - 4, 1, 0]];
 
-
 const moon = new Moon(game, [0, 0, 0]);
 const dome1 = new Dome(game, [townLocations[0][0], townLocations[0][1], townLocations[0][2] - 2], PURPLE);
 const dome2 = new Dome(game, [townLocations[1][0], townLocations[1][1], townLocations[1][2] - 2], GREEN);
@@ -100,8 +99,12 @@ configurePrograms(gl);
 requestAnimationFrame(update);
 
 function shakeScreen(amount) {
-  vec3.add(game.shakeInfo.amplitude, game.shakeInfo.amplitude, [amount, amount, amount]);
-  vec3.set(game.shakeInfo.dir, oneOrMinusOne(), oneOrMinusOne(), -1);
+  const { shakeInfo } = game;
+  const { amplitude, dir } = shakeInfo;
+  const MAX_AMP = 6.0;
+  vec3.add(amplitude, amplitude, [amount, amount, amount]);
+  vec3.set(amplitude, Math.min(MAX_AMP, amplitude[0]), Math.min(MAX_AMP, amplitude[1]), Math.min(MAX_AMP, amplitude[2]));
+  vec3.set(dir, oneOrMinusOne(), oneOrMinusOne(), oneOrMinusOne());
 }
 
 function updateShake(time) {
@@ -112,7 +115,7 @@ function updateShake(time) {
   if (Math.abs(amplitude[0]) <= .001) {
     vec3.set(shakeInfo.pos, 0, 0, 0);
   } else {
-    const offset = Math.sin(time / 200);
+    const offset = Math.sin(time / 10000);
     vec3.set(shakeInfo.pos,
       offset * amplitude[0] * dir[0],
       offset * amplitude[1] * dir[1],
@@ -151,7 +154,7 @@ function update(time) {
   }
 
   game.clickCoords.forEach((coords) => game.drawables.push(
-    new Missile(game, time, townLocations[1], coords, true, GOOD_MISSILE_SPEED)
+    new Missile(game, time, [0, 3.5, 0], coords, true, GOOD_MISSILE_SPEED)
     ));
   game.clickCoords = [];
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
@@ -200,10 +203,14 @@ function checkCollisions(time) {
           otherDrawable.type === "missile" &&
           otherDrawable.good === false
         ) {
-          shakeScreen(BAD_MISSILE_SHAKE_AMOUNT);
           otherDrawable.explode(time);
+          shakeScreen(BAD_MISSILE_SHAKE_AMOUNT);
+        } else if (
+          drawable.type === "dome" &&
+          otherDrawable.type === "explosion"
+        ) {
+          drawable.hit(time);
         }
-
       }
     })
   });

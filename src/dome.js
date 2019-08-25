@@ -89,7 +89,6 @@ export default class Dome {
     configureBuffer(gl, program, normalBuffer, normalData, 3, "aNormal");
     setPosition(gl, program, positionBuffer, vertexPositionData);
     setUvs(gl, program, uvBuffer, this.textureCoordData);
-
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
 

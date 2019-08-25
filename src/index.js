@@ -12,6 +12,7 @@ import Dome from "./dome";
 import Explosion from "./explosion";
 import Missile from "./missile";
 import Moon from "./moon";
+import Cube from "./cube";
 
 import "./index.css";
 
@@ -94,6 +95,9 @@ game.scenary.push(moon);
 game.drawables.push(dome1);
 game.drawables.push(dome2);
 game.drawables.push(dome3);
+
+const cube = new Cube(game, [0,0,-50]);
+game.scenary.push(cube);
 
 configurePrograms(gl);
 
@@ -320,4 +324,5 @@ function configurePrograms(gl) {
   Explosion.configureProgram(gl);
   Moon.configureProgram(gl);
   Missile.configureProgram(gl);
+  Cube.configureProgram(gl);
 }

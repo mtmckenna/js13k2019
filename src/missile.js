@@ -54,7 +54,6 @@ export default class Missile {
     this.angle = vec3.angle([0, 1, 0], destFromOrigin) * -Math.sign(xDirection);
     const explodeTime = vec3.distance(this.position, this.destination) / this.speed + launchTime;
     this.times = { start: launchTime, explode: explodeTime, end: explodeTime + FADE_TIME };
-    this.vertices = TRAIL;
     this.radius = 0.1;
     this.percentDone = 0;
 
@@ -79,11 +78,11 @@ export default class Missile {
   }
 
   draw(time) {
-    const { gl, modelMatrix, vertices, goodFloat } = this;
+    const { gl, modelMatrix, goodFloat } = this;
     const { viewMatrix, projectionMatrix } = this.game;
 
     gl.useProgram(program);
-    setPosition(gl, program, positionBuffer, vertices);
+    setPosition(gl, program, positionBuffer, TRAIL);
     setUvs(gl, program, uvBuffer, QUAD_UVS);
     gl.uniform1f(program.uniformsCache["uTime"], time);
     gl.uniform1f(program.uniformsCache["uGood"], goodFloat);
@@ -94,7 +93,7 @@ export default class Missile {
     gl.uniform1f(program.uniformsCache["uStartTime"], this.times.start);
     gl.uniform1f(program.uniformsCache["uEndTime"], this.times.end);
     gl.uniform1f(program.uniformsCache["uPercentDone"], this.percentDone);
-    gl.drawArrays(gl.TRIANGLES, 0, vertices.length / 3);
+    gl.drawArrays(gl.TRIANGLES, 0, TRAIL.length / 3);
   }
 
   maybeExplode(time) {

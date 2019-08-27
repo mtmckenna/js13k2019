@@ -264,12 +264,20 @@ function updateViewProjection() {
 }
 
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  const width = canvas.clientWidth;
-  const height = canvas.clientHeight;
+  const height = window.innerHeight;
+  const width = window.innerWidth;
+  const heightString = `${height}px`;
+  const widthString = `${width}px`;
 
-  if (dimensions[0] === width && dimensions[1] === height) return;
+  canvas.height = height;
+  canvas.width = width;
+  document.body.style.height = heightString;
+  document.body.style.width = widthString;
+  document.documentElement.style.height = heightString;
+  document.documentElement.style.width = widthString;
+
+  if ((dimensions[0] === width && dimensions[1] === height)) return;
+  window.scrollTo(0, 0);
   gl.viewport(0, 0, width, height);
   resetCamera();
   dimensions[0] = width;
@@ -326,3 +334,6 @@ function configurePrograms(gl) {
   Missile.configureProgram(gl);
   Cube.configureProgram(gl);
 }
+
+// Disable scrolling
+window.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });

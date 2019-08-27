@@ -26,8 +26,6 @@ const gl = canvas.getContext("webgl", { premultipliedAlpha: true });
 // https://www.khronos.org/webgl/wiki/HandlingContextLost
 canvas.addEventListener("webglcontextlost", (event) => event.preventDefault(), false);
 canvas.addEventListener("webglcontextrestored", () => configurePrograms(gl), false);
-
-
 document.body.addEventListener("pointerup", fireMissile, false);
 document.body.addEventListener("touchend", fireMissile, false);
 
@@ -79,11 +77,6 @@ mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-// gl.enable(gl.DEPTH_TEST);
-// gl.depthFunc(gl.NEVER);
-
-// gl.enable(gl.CULL_FACE);
-// gl.cullFace(gl.BACK);
 
 const townLocations = [[-gameWidth + 4, 1, 0], [0, 1, 0], [gameWidth - 4, 1, 0]];
 
@@ -96,7 +89,8 @@ game.drawables.push(dome1);
 game.drawables.push(dome2);
 game.drawables.push(dome3);
 
-const cube = new Cube(game, [0,0,-50]);
+const cube = new Cube(game, [0, 0, -50], [100, 1, 50]);
+cube.fadeDistance = 2;
 game.scenary.push(cube);
 
 configurePrograms(gl);

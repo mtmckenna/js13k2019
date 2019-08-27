@@ -78,7 +78,6 @@ export default class Explosion {
     gl.uniform1f(program.uniformsCache["uTime"], time);
     gl.uniform1f(program.uniformsCache["uEndTime"], this.times.end);
     gl.uniform1f(program.uniformsCache["uStartFadeTime"], this.times.startFade);
-    gl.uniform3f(program.uniformsCache["uColor"], 1.0, 0.5, 0.0);
     gl.uniform1f(program.uniformsCache["uRandom"], randomFloat);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);

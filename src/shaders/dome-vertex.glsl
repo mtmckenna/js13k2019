@@ -15,7 +15,6 @@ uniform mat4 normalMatrix;
 varying vec3 vLightIntensity;
 varying vec2 vUvs;
 
-
 void main() {
   highp vec4 tnorm = normalMatrix * vec4(normalize(aNormal), 1.0);
 

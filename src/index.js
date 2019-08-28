@@ -7,11 +7,11 @@ import {
   randomFloatBetween,
   randomIntBetween,
 } from "./webgl-helpers";
-import { UNIFORM_NAMES } from "./models";
 import Dome from "./dome";
 import Explosion from "./explosion";
 import Missile from "./missile";
 import Moon from "./moon";
+import Mountains from "./mountains";
 import Cube from "./cube";
 
 import "./index.css";
@@ -89,9 +89,8 @@ game.drawables.push(dome1);
 game.drawables.push(dome2);
 game.drawables.push(dome3);
 
-const cube = new Cube(game, [0, 0, -50], [100, 1, 50]);
-cube.fadeDistance = 2;
-game.scenary.push(cube);
+let mountains = null;
+let ground = null;
 
 configurePrograms(gl);
 
@@ -142,7 +141,7 @@ function update(time) {
       game.drawables.push(
         new Missile(game,
           time,
-          [launchX, -game.bounds.height, 0.0],
+          [launchX, game.bounds.height, 0.0],
           townToAimAt,
           false,
           BAD_MISSILE_SPEED * game.missileSpeedMultiplier
@@ -286,8 +285,8 @@ function resize() {
 
   // Move 0 on the y-axis to the bottom of the screen
   const bottomOfWorld = unprojectPoint([width, height], inverseViewProjectionMatrix);
-  game.bounds.width = bottomOfWorld[0] * 2;
-  game.bounds.height = bottomOfWorld[1] * 2;
+  game.bounds.width = Math.abs(bottomOfWorld[0] * 2);
+  game.bounds.height = Math.abs(bottomOfWorld[1] * 2);
   vec3.set(cameraPos, 0, -bottomOfWorld[1], z);
   vec3.copy(game.camera.staticPos, cameraPos);
   vec3.set(lookAtPos, 0, -bottomOfWorld[1], -1);
@@ -306,6 +305,28 @@ function resize() {
 
   // Make bad missiles faster the game screen is taller
   game.missileSpeedMultiplier = Math.abs(game.bounds.height / 25);
+
+  // Reset mountains
+  if (mountains) {
+    const mountainIndex = game.scenary.indexOf(mountains);
+    game.scenary.splice(mountainIndex, 1);
+  }
+
+  const mountainY = game.bounds.height * .2;
+  const mountainHeight = (game.bounds.height - mountainY) * .66;
+  mountains = new Mountains(game, [0, mountainY, 0], [2, mountainHeight, 0.5]);
+  game.scenary.push(mountains);
+
+  // Reset ground
+  if (ground) {
+    const groundIndex = game.scenary.indexOf(ground);
+    game.scenary.splice(groundIndex, 1);
+  }
+
+  const groundDepth = 50;
+  ground = new Cube(game, [0, game.bounds.height * .25 - 1, groundDepth / 2], [game.bounds.width, 1, groundDepth]);
+  ground.fadeDistance = groundDepth;
+  game.scenary.push(ground);
 }
 
 function newViewMatrix() {
@@ -324,8 +345,9 @@ function newProjectionMatrix() {
 function configurePrograms(gl) {
   Dome.configureProgram(gl);
   Explosion.configureProgram(gl);
-  Moon.configureProgram(gl);
   Missile.configureProgram(gl);
+  Moon.configureProgram(gl);
+  Mountains.configureProgram(gl);
   Cube.configureProgram(gl);
 }
 

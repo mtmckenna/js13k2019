@@ -69,7 +69,7 @@ export default class Cube {
     gl.useProgram(program);
     // configureBuffer(gl, program, normalBuffer, CUBE_NORMALS, 3, "aNormal");
     setPosition(gl, program, positionBuffer, CUBE);
-    // setUvs(gl, program, uvBuffer, CUBE_UVS);
+    setUvs(gl, program, uvBuffer, CUBE_UVS);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, CUBE_INDICES, gl.STATIC_DRAW);
@@ -83,7 +83,6 @@ export default class Cube {
 
     gl.drawElements(gl.TRIANGLES, CUBE_INDICES.length, gl.UNSIGNED_SHORT, 0);
   }
-
 }
 
 function configureProgram(gl) {

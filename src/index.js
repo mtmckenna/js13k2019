@@ -181,7 +181,6 @@ function draw(time) {
   gl.clearDepth(1.0);                 // Clear everything
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  // drawOrigin();
   game.scenary.forEach((drawable) => drawable.draw(time));
   game.drawables.forEach((drawable) => drawable.draw(time));
 }
@@ -318,9 +317,7 @@ function resize() {
     game.scenary.splice(groundIndex, 1);
   }
 
-  // gl.frontFace(gl.CW);
   const groundDepth = 50;
-  // ground = new Cube(game, [0, game.bounds.height * .25 - 1, groundDepth / 2], [game.bounds.width, 1, groundDepth]);
   ground = new Cube(game, [0, -2, -groundDepth], [game.bounds.width * 2, 1, groundDepth]);
   game.scenary.push(ground);
 

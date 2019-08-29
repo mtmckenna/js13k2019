@@ -44,7 +44,7 @@ const viewProjectionMatrix = mat4.create();
 const inverseViewProjectionMatrix = mat4.create();
 const GOOD_MISSILE_SPEED = 0.019;
 const BAD_MISSILE_SPEED = 0.0025;
-const GOOD_MISSILE_SHAKE_AMOUNT = 1.0;
+const GOOD_MISSILE_SHAKE_AMOUNT = 0.5;
 const BAD_MISSILE_SHAKE_AMOUNT = 3.0;
 const GREEN = [0.2, 0.9, 0.2];
 const RED = [0.9, 0.2, 0.2];
@@ -101,7 +101,7 @@ requestAnimationFrame(update);
 function shakeScreen(amount) {
   const { shakeInfo } = game;
   const { amplitude, dir } = shakeInfo;
-  const MAX_AMP = 6.0;
+  const MAX_AMP = 1;
   vec3.add(amplitude, amplitude, [amount, amount, amount]);
   vec3.set(amplitude, Math.min(MAX_AMP, amplitude[0]), Math.min(MAX_AMP, amplitude[1]), Math.min(MAX_AMP, amplitude[2]));
   vec3.set(dir, oneOrMinusOne(), oneOrMinusOne(), oneOrMinusOne());

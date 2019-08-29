@@ -37,7 +37,7 @@ const lookAtPos = vec3.create();
 const dimensions = [-1, -1];
 const nearPlane = 0.1 + EPSILON;
 const farPlane = 400.0;
-const fov = 20 * Math.PI / 180;
+const fov = 30 * Math.PI / 180;
 const viewMatrix = newViewMatrix();
 const projectionMatrix = newProjectionMatrix();
 const viewProjectionMatrix = mat4.create();
@@ -321,9 +321,7 @@ function resize() {
   // gl.frontFace(gl.CW);
   const groundDepth = 50;
   // ground = new Cube(game, [0, game.bounds.height * .25 - 1, groundDepth / 2], [game.bounds.width, 1, groundDepth]);
-  ground = new Cube(game, [0, 0, -10], [game.bounds.width, 1, 10]);
-  // ground = new Cube(game, [0, 0, -30], [3, 3, 30]);
-  ground.fadeDistance = groundDepth;
+  ground = new Cube(game, [0, -1, -groundDepth], [game.bounds.width * 2, 1.0, groundDepth]);
   game.scenary.push(ground);
 
   // Reset mountains

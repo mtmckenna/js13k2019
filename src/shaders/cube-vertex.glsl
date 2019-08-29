@@ -15,18 +15,13 @@ varying vec4 vWorldPos;
 varying vec3 vLighting;
 
 void main() {
-  vWorldPos = modelMatrix * vec4(aPosition, 1);
-  gl_Position = projectionMatrix * viewMatrix * vWorldPos;
-  
   vec4 transformedNormal = normalMatrix * vec4(aNormal, 1.0);
-  float directional = max(dot(transformedNormal.xyz, normalize(uLightDirection)), 0.0);
+  float directional = max(dot(transformedNormal.xyz, uLightDirection), 0.0);
 
-
-  // attenuation = 1.0;
-  // float attenuation = clamp(10.0 / distance, 0.0, 1.0);
-
-  vLighting = uLightColor * directional;
-
+  vLighting = uLightColor * directional + .1;
   vPosition = aPosition;
   vUvs = aUvs;
+  vWorldPos = modelMatrix * vec4(aPosition, 1);
+
+  gl_Position = projectionMatrix * viewMatrix * vWorldPos;
 }

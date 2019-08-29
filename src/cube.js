@@ -60,8 +60,9 @@ export default class Cube {
     mat4.identity(tempMatrix);
     mat4.identity(normalMatrix);
     mat4.translate(tempMatrix, modelMatrix, this.position);
+    // mat4.rotate(tempMatrix, tempMatrix, Math.PI/5, [1,0,0]);
     mat4.scale(tempMatrix, tempMatrix, this.dimensions);
-    // mat4.rotate(tempMatrix, tempMatrix, -this.rotation, [1,0,0]);
+
     mat4.copy(modelMatrix, tempMatrix);
     mat4.multiply(modelViewMatrix, modelMatrix, viewMatrix);
     mat4.invert(normalMatrix, modelViewMatrix);
@@ -69,7 +70,7 @@ export default class Cube {
   }
 
   draw(time) {
-    const { gl, modelMatrix, normalMatrix } = this;
+    const { gl, modelMatrix, normalMatrix, position, dimensions } = this;
     const { viewMatrix, projectionMatrix } = this.game;
     gl.useProgram(program);
     gl.enable(gl.DEPTH_TEST);
@@ -83,8 +84,8 @@ export default class Cube {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, CUBE_INDICES, gl.STATIC_DRAW);
 
     gl.uniform1f(program.uniformsCache["uFadeDistance"], this.fadeDistance);
-    gl.uniform3f(program.uniformsCache["uLightDirection"], 0.0, 1.0, 0.0);
-    gl.uniform3f(program.uniformsCache["uLightPosition"], 0.0, 0.0, 0.0);
+    gl.uniform3f(program.uniformsCache["uLightDirection"], 0.0, 0.5, 0.9);
+    gl.uniform3f(program.uniformsCache["uLightPosition"], position[0], position[1], 0);
     gl.uniform3f(program.uniformsCache["uLightColor"], 1.0, 1.0, 1.0);
     gl.uniform3f(program.uniformsCache["uColor"], 0.47, 0.74, 0.54);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);

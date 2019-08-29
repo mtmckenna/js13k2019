@@ -9,21 +9,14 @@ varying vec2 vUvs;
 varying vec4 vWorldPos;
 varying vec3 vLighting;
 
+  float c1 = 0.01;
+  float c2 = 0.003;
 void main() {
-  //  gl_FragColor = vec4(uColor.xyz, 1.0);  
-  // float alpha = 1.0 - vPosition.z / uFadeDistance;
-  // float alpha = vWorldPos.z / 25.0;
-
-  // vec4 distanceToLight = vec4(uLightPosition.xyz, 1.0) - vWorldPos;
-  float distanceToLight = uLightPosition.z - vWorldPos.z;
+  vec4 distanceToLight = vec4(uLightPosition.xyz, 1.0) - vWorldPos;
   float distance = length(distanceToLight);
-  // float attenuation = clamp(3.0 / distance, 0.0, 1.0);
-  float c1 = 0.1;
-  float c2 = 0.0;
-  float attenuation = 1.0/(1.0 + c1*distance + c1*distance*distance);
+
+  float attenuation = 1.0/(1.0 + c1*distance + c2*distance*distance);
   attenuation = clamp(attenuation, 0.0, 1.0);
 
-
-
-  gl_FragColor = vec4(uColor.xyz * vLighting, 1.0 * attenuation);
+  gl_FragColor = vec4(uColor.xyz * vLighting, attenuation);
 }

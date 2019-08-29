@@ -119,8 +119,8 @@ export default class Dome {
     const indexData = [];
 
     const radius = 0.5;
-    const latitudeBands = 10;
-    const longitudeBands = 10;
+    const latitudeBands = 15;
+    const longitudeBands = 15;
 
     // Calculate sphere vertex positions, normals, and texture coordinates.
     for (let latNumber = 0; latNumber <= latitudeBands; ++latNumber) {

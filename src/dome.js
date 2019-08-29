@@ -40,7 +40,7 @@ export default class Dome {
 
   get collisionPosition() { return this.position; }
 
-  constructor(game, position, color = [1.0, 1.0, 1.0]) {
+  constructor(game, position, color) {
     this.type = "dome";
     this.game = game;
     this.gl = this.game.gl;
@@ -51,7 +51,7 @@ export default class Dome {
     this.modelMatrix = mat4.create();
     this.normalMatrix = mat4.create();
     this.tempMatrix = mat4.create();
-    this.radius = 3;
+    this.radius = 4.2;
     this.rotation = 0;
     this.hitFloat = 0.0;
     this.times = { hitTime: 0 };

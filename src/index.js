@@ -78,6 +78,8 @@ mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
+gl.depthFunc(gl.LESS);
+
 const townLocations = [[-gameWidth + 4, 1, 0], [0, 1, 0], [gameWidth - 4, 1, 0]];
 
 const moon = new Moon(game, [0, 0, 0]);
@@ -175,6 +177,10 @@ function update(time) {
 }
 
 function draw(time) {
+  // gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+  gl.clearDepth(1.0);                 // Clear everything
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
   // drawOrigin();
   game.scenary.forEach((drawable) => drawable.draw(time));
   game.drawables.forEach((drawable) => drawable.draw(time));
@@ -306,6 +312,20 @@ function resize() {
   // Make bad missiles faster the game screen is taller
   game.missileSpeedMultiplier = Math.abs(game.bounds.height / 25);
 
+  // Reset ground
+  if (ground) {
+    const groundIndex = game.scenary.indexOf(ground);
+    game.scenary.splice(groundIndex, 1);
+  }
+
+  // gl.frontFace(gl.CW);
+  const groundDepth = 50;
+  // ground = new Cube(game, [0, game.bounds.height * .25 - 1, groundDepth / 2], [game.bounds.width, 1, groundDepth]);
+  ground = new Cube(game, [0, 0, -10], [game.bounds.width, 1, 10]);
+  // ground = new Cube(game, [0, 0, -30], [3, 3, 30]);
+  ground.fadeDistance = groundDepth;
+  game.scenary.push(ground);
+
   // Reset mountains
   if (mountains) {
     const mountainIndex = game.scenary.indexOf(mountains);
@@ -316,17 +336,6 @@ function resize() {
   const mountainHeight = (game.bounds.height - mountainY) * .66;
   mountains = new Mountains(game, [0, mountainY, 0], [2, mountainHeight, 0.5]);
   game.scenary.push(mountains);
-
-  // Reset ground
-  if (ground) {
-    const groundIndex = game.scenary.indexOf(ground);
-    game.scenary.splice(groundIndex, 1);
-  }
-
-  const groundDepth = 50;
-  ground = new Cube(game, [0, game.bounds.height * .25 - 1, groundDepth / 2], [game.bounds.width, 1, groundDepth]);
-  ground.fadeDistance = groundDepth;
-  game.scenary.push(ground);
 }
 
 function newViewMatrix() {

@@ -321,7 +321,7 @@ function resize() {
   // gl.frontFace(gl.CW);
   const groundDepth = 50;
   // ground = new Cube(game, [0, game.bounds.height * .25 - 1, groundDepth / 2], [game.bounds.width, 1, groundDepth]);
-  ground = new Cube(game, [0, -1, -groundDepth], [game.bounds.width * 2, 1.0, groundDepth]);
+  ground = new Cube(game, [0, -2, -groundDepth], [game.bounds.width * 2, 1, groundDepth]);
   game.scenary.push(ground);
 
   // Reset mountains

@@ -1,6 +1,7 @@
-import { mat4 } from "./lib/gl-matrix";
+import { mat4, vec3 } from "./lib/gl-matrix";
 import {
   configureBuffer,
+  randomFloatBetween,
   programFromCompiledShadersAndUniformNames,
   setPosition,
   setUvs,
@@ -18,9 +19,12 @@ const DOME_UNIFORM_NAMES = [
   "uKd",
   "uLd",
   "uHit",
+  "uHealth",
 ];
 
 const HIT_TIME = 200;
+const DAMAGE = 0.003;
+const JITTER = 0.25;
 
 let program = null;
 let normalBuffer = null;
@@ -45,7 +49,10 @@ export default class Dome {
     this.game = game;
     this.gl = this.game.gl;
     this.position = position;
+    this.originalPosition = vec3.create();
+    vec3.set(this.originalPosition, position[0], position[1], position[2]);
     this.dead = false;
+    this.health = 1;
     this.color = color;
     this.collidable = true;
     this.modelMatrix = mat4.create();
@@ -79,6 +86,15 @@ export default class Dome {
     if (time - this.times.hitTime > HIT_TIME) {
       this.hitFloat = 0.0;
     }
+
+    if (this.hitFloat > 0) {
+      this.health -= DAMAGE;
+      this.health = Math.max(this.health, 0);
+    }
+
+    if (this.health < .20 && this.health > 0) {
+      this.position[0] = this.originalPosition[0] + randomFloatBetween(-JITTER, JITTER);
+    }
   }
 
   draw(time) {
@@ -95,6 +111,7 @@ export default class Dome {
 
     gl.uniform1f(program.uniformsCache["uTime"], time);
     gl.uniform1f(program.uniformsCache["uHit"], this.hitFloat);
+    gl.uniform1f(program.uniformsCache["uHealth"], this.health);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);

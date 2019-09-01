@@ -29,6 +29,11 @@ canvas.addEventListener("webglcontextrestored", () => configurePrograms(gl), fal
 document.body.addEventListener("pointerup", fireMissile, false);
 document.body.addEventListener("touchend", fireMissile, false);
 
+const textBox = document.createElement("div");
+textBox.classList.add("text")
+document.body.appendChild(textBox);
+setTimeout(() => displayText("Infinite Missiles"), 1);
+
 console.log(TinyMusic);
 
 const gameWidth = 20;
@@ -71,6 +76,7 @@ game.shakeInfo = {
   dir: vec3.create(),
   pos: vec3.create(),
 }
+game.started = false;
 
 mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
 mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
@@ -223,6 +229,11 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
+  if (!game.started) {
+    startGame();
+    return;
+  }
+
   let touch = event;
   if (event.touches) touch = event.changedTouches[0];
   const worldCoords = unprojectPoint([touch.clientX, touch.clientY]);
@@ -248,6 +259,11 @@ function fireMissile(event) {
   // console.log("clip: ", [x, y]);
   // console.log("world: ", worldCoords);
   return worldCoords;
+}
+
+function startGame() {
+  game.started = true;
+  hideText();
 }
 
 function resetCamera() {
@@ -374,6 +390,16 @@ function configurePrograms(gl) {
   Moon.configureProgram(gl);
   Mountains.configureProgram(gl);
   Cube.configureProgram(gl);
+}
+
+function displayText(text) {
+  textBox.innerText = text;
+  textBox.style.opacity = 1.0;
+}
+
+function hideText(now = true) {
+  const time = now ? 0 : 3000;
+  setTimeout(() => textBox.style.opacity = 0.0, time);
 }
 
 // Disable scrolling

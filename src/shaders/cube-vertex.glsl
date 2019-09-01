@@ -22,7 +22,6 @@ void main() {
   vec4 distanceToLight = normalize(vec4(uLightPosition, 1) - vWorldPos);
   float directional = max(dot(transformedNormal, distanceToLight), 0.0);
 
-
   vLighting = uLightColor * directional + .5;
   vPosition = aPosition;
   vUvs = aUvs;

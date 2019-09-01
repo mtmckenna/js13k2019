@@ -252,6 +252,8 @@ function resetCamera() {
   vec3.set(cameraPos, 0, 0, 1);
   vec3.set(lookAtPos, 0, 0, -1);
   updateViewProjection();
+  // gl.enable(gl.CULL_FACE);
+  // gl.cullFace(gl.BACK);
 }
 
 function updateViewProjection() {

@@ -28,8 +28,10 @@ let uvData = [];
 let indexData = [];
 let normalData = [];
 
-export default class Mountains {
+const MIN_WIDTH = 2.2;
+const MAX_WIDTH = 4.8;
 
+export default class Mountains {
   static configureProgram(gl) {
     program = configureProgram(gl);
     normalBuffer = gl.createBuffer();
@@ -76,14 +78,14 @@ export default class Mountains {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
 
     gl.uniform1f(program.uniformsCache["uTime"], time);
-    gl.uniform3f(program.uniformsCache["uLightPosition"], 1, 1, 1);
-    gl.uniform3f(program.uniformsCache["uLightColor"], 1.0, 1.0, 1.0);
+    gl.uniform3f(program.uniformsCache["uLightPosition"], .3, 0, -0.9);
+    gl.uniform3f(program.uniformsCache["uLightColor"], 0.0, 0.5, 1.0);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
 
-    gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
+    gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
   }
 
   configureVertices() {
@@ -91,11 +93,13 @@ export default class Mountains {
     const vertB = vec3.create();
     const vertC = vec3.create();
     const vertD = vec3.create();
-    const vertices = [vertA, vertB, vertC, vertD];
+    const vertices = [vertA, vertB, vertC, vertC, vertB, vertD];
     const vecA = vec3.create();
     const vecB = vec3.create();
-    const normal = vec3.create();
-    const numMountains = 1;
+    const normalA = vec3.create();
+    const normalB = vec3.create();
+    const normals = [normalA, normalA, normalA, normalB, normalB, normalB];
+    const numMountains = 7;
     const start = 0;
     let distance = 0;
     vertexData = [];
@@ -104,53 +108,36 @@ export default class Mountains {
     uvData = [];
 
     vec3.set(vertA, start,  0.0, 0.0);
-    vec3.set(vertB, start,  0.0, 4.0);
+    vec3.set(vertB, start,  0.0, 5.0);
     vec3.set(vertC, start,  1.0, 0.0);
     vec3.set(vertD, -vertA[0],  vertA[1], vertA[2]);
 
     for (let i = 0; i < numMountains; i++) {
+      const width = randomFloatBetween(MIN_WIDTH, MAX_WIDTH);
       vertA[0] = start + distance;
-      vertB[0] = start + distance + 1;
-      vertC[0] = start + distance + 1;
-      vertD[0] = vertA[0] + 2;
-      // vertC[1] = randomFloatBetween(0.8, 1.2);
+      vertB[0] = start + distance + width;
+      vertC[0] = start + distance + width;
+      vertD[0] = vertA[0] + width * 2;
+      vertC[1] = randomFloatBetween(0.8, 1.2);
       vertices.forEach((vertex) => vertexData.push(...vertex));
-      distance += 2;
+
+      vec3.subtract(vecA, vertC, vertA);
+      vec3.subtract(vecB, vertB, vertA);
+      vec3.cross(normalA, vecA, vecB);
+
+      vec3.subtract(vecA, vertD, vertB);
+      vec3.subtract(vecB, vertB, vertC);
+      vec3.cross(normalB, vecA, vecB);
+
+      normals.forEach((normal) => normalData.push(...normal));
+
+      distance += width * 1.3;
     }
 
-    for (let i = 0; i < numMountains; i++) {
-      const index = i * 3 + i;
-      indexData.push(index + 0, index + 1, index + 2);
-      indexData.push(index + 1, index + 3, index + 2);
-    }
 
-    for (let i = 0; i < indexData.length; i = (i + 1) * 3) {
-      // Get array index of vertex
-      const i0 = indexData[i + 0] * 3;
-      const i1 = indexData[i + 1] * 3;
-      const i2 = indexData[i + 2] * 3;
-
-      // Arrange vertices of each triangle
-      const tri = [
-        [vertexData[i0 + 0], vertexData[i0 + 1], vertexData[i0 + 2]],
-        [vertexData[i1 + 0], vertexData[i1 + 1], vertexData[i1 + 2]],
-        [vertexData[i2 + 0], vertexData[i2 + 1], vertexData[i2 + 2]],
-      ];
-
-      for (let j = 0; j < 3; j++) {
-        const a = (j + 1) % 3;
-        const b = (j + 2) % 3;
-
-        vec3.subtract(vecA, tri[j], tri[a]);
-        vec3.subtract(vecB, tri[j], tri[b]);
-        vec3.cross(normal, vecA, vecB);
-        normalData.push(...normal);
-      }
-    }
-
-    console.log("vertex: ", vertexData);
-    console.log("normal: ", normalData);
-    console.log("index:" , indexData);
+    // console.log("vertex: ", vertexData);
+    // console.log("normal: ", normalData);
+    // console.log("index:" , indexData);
 
     // vertexData = [
     //   -0.5,  0.0, 0.0,

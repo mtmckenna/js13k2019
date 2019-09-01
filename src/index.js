@@ -37,7 +37,7 @@ const lookAtPos = vec3.create();
 const dimensions = [-1, -1];
 const nearPlane = 0.1 + EPSILON;
 const farPlane = 400.0;
-const fov = 30 * Math.PI / 180;
+const fov = 15 * Math.PI / 180;
 const viewMatrix = newViewMatrix();
 const projectionMatrix = newProjectionMatrix();
 const viewProjectionMatrix = mat4.create();
@@ -330,8 +330,8 @@ function resize() {
   }
 
   const mountainY = game.bounds.height * .2;
-  const mountainHeight = (game.bounds.height - mountainY) * .66;
-  mountains = new Mountains(game, [0, mountainY, 0], [2, mountainHeight, 0.5]);
+  const mountainHeight = (game.bounds.height - mountainY) * .40;
+  mountains = new Mountains(game, [-game.bounds.width / 2 - 10, mountainY, 0], [2, mountainHeight, 0.5]);
   game.scenary.push(mountains);
 }
 

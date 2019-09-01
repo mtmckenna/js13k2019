@@ -14,7 +14,6 @@ const DOME_UNIFORM_NAMES = [
   ...UNIFORM_NAMES,
   "normalMatrix",
   "uColor",
-  "uFadeDistance",
   "uLightPosition",
   "uLightColor",
 ];
@@ -45,7 +44,6 @@ export default class Cube {
     this.normalMatrix = mat4.create();
     this.tempMatrix = mat4.create();
     this.rotation = 0;
-    this.fadeDistance = 1.0;
 
     this.update();
   }
@@ -81,7 +79,6 @@ export default class Cube {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, CUBE_INDICES, gl.STATIC_DRAW);
 
-    gl.uniform1f(program.uniformsCache["uFadeDistance"], this.fadeDistance);
     gl.uniform3f(program.uniformsCache["uLightPosition"], 0, 1, 0);
     gl.uniform3f(program.uniformsCache["uLightColor"], 1.0, 1.0, 1.0);
     gl.uniform3f(program.uniformsCache["uColor"], 0.47, 0.74, 0.54);

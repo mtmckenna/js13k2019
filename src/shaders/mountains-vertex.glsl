@@ -1,7 +1,7 @@
 precision highp float;
 
 attribute vec3 aPosition;
-attribute vec2 aUvs;
+// attribute vec2 aUvs;
 attribute vec3 aNormal;
 
 uniform mat4 modelMatrix;
@@ -14,6 +14,6 @@ varying vec2 vUvs;
 
 void main() {
   vNormal = aNormal;
-  vUvs = aUvs;
+  // vUvs = aUvs;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
 }

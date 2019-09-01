@@ -7,6 +7,7 @@ uniform mat4 viewMatrix;
 uniform float uTime;
 uniform float uHit;
 uniform float uHealth;
+uniform float uAlpha;
 
 varying highp vec3 vLightIntensity;
 varying vec2 vUvs;
@@ -20,6 +21,7 @@ void main() {
   color.b = min(color.b, 0.2);
   color = vLightIntensity + color;
   color.r = color.r + (1.0 - uHealth);
-  gl_FragColor = vec4(color, 0.8);
+
+  gl_FragColor = vec4(color, min(uAlpha, 0.8));
 }
 

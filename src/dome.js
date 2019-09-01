@@ -20,11 +20,13 @@ const DOME_UNIFORM_NAMES = [
   "uLd",
   "uHit",
   "uHealth",
+  "uAlpha",
 ];
 
 const HIT_TIME = 200;
 const DAMAGE = 0.003;
 const JITTER = 0.25;
+const DEATH_FADE_TIME = 1000;
 
 let program = null;
 let normalBuffer = null;
@@ -61,7 +63,9 @@ export default class Dome {
     this.radius = 4.2;
     this.rotation = 0;
     this.hitFloat = 0.0;
-    this.times = { hitTime: 0 };
+    this.exploded = false;
+    this.times = { hit: 0, exploded: 0, death: 0 };
+    this.alpha = 1;
 
     this.initVertexBuffers();
     this.update();
@@ -83,7 +87,7 @@ export default class Dome {
     mat4.multiply(modelViewMatrix, modelMatrix, viewMatrix);
     mat4.invert(normalMatrix, modelViewMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
-    if (time - this.times.hitTime > HIT_TIME) {
+    if (time - this.times.hit > HIT_TIME) {
       this.hitFloat = 0.0;
     }
 
@@ -95,14 +99,25 @@ export default class Dome {
     if (this.health < .20 && this.health > 0) {
       this.position[0] = this.originalPosition[0] + randomFloatBetween(-JITTER, JITTER);
     }
+
+    if (this.health <= 0) {
+
+      if (!this.exploded) {
+        this.exploded = true;
+        this.times.exploded = time;
+      }
+
+      this.alpha = Math.max(1.0 - (time - this.times.exploded) / DEATH_FADE_TIME, 0.0);
+    }
   }
 
   draw(time) {
     const { gl, modelMatrix, normalMatrix } = this;
     const { normalData, indexData, vertexPositionData } = this;
     const { viewMatrix, projectionMatrix } = this.game;
+
+
     gl.useProgram(program);
-    // gl.frontFace(gl.CW);
     configureBuffer(gl, program, normalBuffer, normalData, 3, "aNormal");
     setPosition(gl, program, positionBuffer, vertexPositionData);
     setUvs(gl, program, uvBuffer, this.textureCoordData);
@@ -110,6 +125,7 @@ export default class Dome {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
 
     gl.uniform1f(program.uniformsCache["uTime"], time);
+    gl.uniform1f(program.uniformsCache["uAlpha"], this.alpha);
     gl.uniform1f(program.uniformsCache["uHit"], this.hitFloat);
     gl.uniform1f(program.uniformsCache["uHealth"], this.health);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
@@ -121,11 +137,14 @@ export default class Dome {
     gl.uniform3fv(program.uniformsCache["uKd"], this.color);
     gl.uniform3fv(program.uniformsCache["uLd"], [1.0, 1.0, 1.0]);
 
+    gl.frontFace(gl.CW);
     gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
+    gl.frontFace(gl.CCW);
+
   }
 
   hit(time) {
-    this.times.hitTime = time;
+    this.times.hit = time;
     this.hitFloat = 1.0;
   }
 

@@ -18,7 +18,7 @@ varying vec3 vLight;
 void main() {
   vNormal = aNormal;
   float light = dot(normalize(aNormal), normalize(uLightPosition));
-  vLight = uLightColor * light + 0.4;
+  vLight = uLightColor * light;
   // vUvs = aUvs;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
 }

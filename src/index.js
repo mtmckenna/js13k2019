@@ -91,7 +91,9 @@ game.drawables.push(dome1);
 game.drawables.push(dome2);
 game.drawables.push(dome3);
 
-let mountains = null;
+let mountains1 = null;
+let mountains2 = null;
+let mountains3 = null;
 let ground = null;
 
 configurePrograms(gl);
@@ -324,15 +326,32 @@ function resize() {
   game.scenary.push(ground);
 
   // Reset mountains
-  if (mountains) {
-    const mountainIndex = game.scenary.indexOf(mountains);
+  if (mountains1) {
+    const mountainIndex = game.scenary.indexOf(mountains1);
+    game.scenary.splice(mountainIndex, 1);
+  }
+
+  if (mountains2) {
+    const mountainIndex = game.scenary.indexOf(mountains2);
+    game.scenary.splice(mountainIndex, 1);
+  }
+
+  if (mountains3) {
+    const mountainIndex = game.scenary.indexOf(mountains3);
     game.scenary.splice(mountainIndex, 1);
   }
 
   const mountainY = game.bounds.height * .2;
-  const mountainHeight = (game.bounds.height - mountainY) * .40;
-  mountains = new Mountains(game, [-game.bounds.width / 2 - 10, mountainY, 0], [2, mountainHeight, 0.5]);
-  game.scenary.push(mountains);
+  const mountainHeight = (game.bounds.height - mountainY) * .60;
+  const mountainStart = -game.bounds.width / 2 - game.bounds.width * .25;
+  const mountainEnd = game.bounds.width + game.bounds.width * .25;
+
+  mountains1 = new Mountains(game, [mountainStart, mountainY, 0], [mountainEnd, mountainHeight * 1.0, 0], [0.0, 0.3, 0.5]);
+  mountains2 = new Mountains(game, [mountainStart, mountainY, 1], [mountainEnd, mountainHeight * 0.7, 0], [0.0, 0.5, 0.5]);
+  mountains3 = new Mountains(game, [mountainStart, mountainY, 2], [mountainEnd, mountainHeight * 0.3, 0], [0.0, 0.4, 0.5]);
+  game.scenary.push(mountains1);
+  game.scenary.push(mountains2);
+  game.scenary.push(mountains3);
 }
 
 function newViewMatrix() {

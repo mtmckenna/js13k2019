@@ -22,14 +22,10 @@ let program = null;
 let normalBuffer = null;
 let positionBuffer = null;
 let uvBuffer = null;
-let indexBuffer = null;
-let vertexData = [];
-let uvData = [];
-let indexData = [];
-let normalData = [];
 
-const MIN_WIDTH = 2.2;
-const MAX_WIDTH = 4.8;
+const MIN_WIDTH = 3.2;
+const MAX_WIDTH = 5.8;
+const DEPTH = 1;
 
 export default class Mountains {
   static configureProgram(gl) {
@@ -37,15 +33,16 @@ export default class Mountains {
     normalBuffer = gl.createBuffer();
     positionBuffer = gl.createBuffer();
     uvBuffer = gl.createBuffer();
-    indexBuffer = gl.createBuffer();
   }
 
-  constructor(game, position, avgDimensions) {
+  constructor(game, position, avgDimensions, color) {
     this.type = "mountains";
     this.game = game;
     this.gl = this.game.gl;
     this.position = position;
+    this.color = color;
     this.avgDimensions = avgDimensions;
+    this.dimensions = avgDimensions;
     this.modelMatrix = mat4.create();
     this.normalMatrix = mat4.create();
 
@@ -61,25 +58,22 @@ export default class Mountains {
     mat4.identity(normalMatrix);
 
     mat4.translate(modelMatrix, modelMatrix, this.position);
-    mat4.scale(modelMatrix, modelMatrix, this.avgDimensions);
     mat4.multiply(modelViewMatrix, modelMatrix, viewMatrix);
     mat4.invert(normalMatrix, modelViewMatrix);
     mat4.transpose(normalMatrix, normalMatrix);
   }
 
   draw(time) {
-    const { gl, modelMatrix, normalMatrix } = this;
+    const { gl, modelMatrix, normalMatrix, color, vertexData, normalData } = this;
     const { viewMatrix, projectionMatrix } = this.game;
     gl.useProgram(program);
     setPosition(gl, program, positionBuffer, vertexData);
     configureBuffer(gl, program, normalBuffer, normalData, 3, "aNormal");
     // setUvs(gl, program, uvBuffer, uvData);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
 
     gl.uniform1f(program.uniformsCache["uTime"], time);
     gl.uniform3f(program.uniformsCache["uLightPosition"], .3, 0, -0.9);
-    gl.uniform3f(program.uniformsCache["uLightColor"], 0.0, 0.5, 1.0);
+    gl.uniform3f(program.uniformsCache["uLightColor"], ...color);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
@@ -89,6 +83,11 @@ export default class Mountains {
   }
 
   configureVertices() {
+    this.vertexData = [];
+    this.uvData = [];
+    this.indexData = [];
+    this.normalData = [];
+
     const vertA = vec3.create();
     const vertB = vec3.create();
     const vertC = vec3.create();
@@ -99,27 +98,28 @@ export default class Mountains {
     const normalA = vec3.create();
     const normalB = vec3.create();
     const normals = [normalA, normalA, normalA, normalB, normalB, normalB];
-    const numMountains = 7;
     const start = 0;
     let distance = 0;
-    vertexData = [];
-    indexData = [];
-    normalData = [];
-    uvData = [];
 
     vec3.set(vertA, start,  0.0, 0.0);
-    vec3.set(vertB, start,  0.0, 5.0);
+    vec3.set(vertB, start,  0.0, DEPTH);
     vec3.set(vertC, start,  1.0, 0.0);
     vec3.set(vertD, -vertA[0],  vertA[1], vertA[2]);
 
-    for (let i = 0; i < numMountains; i++) {
+    while (distance < this.dimensions[0]) {
       const width = randomFloatBetween(MIN_WIDTH, MAX_WIDTH);
+      const maxHeight = this.dimensions[1];
+      const height = randomFloatBetween(maxHeight * .6, maxHeight);
       vertA[0] = start + distance;
       vertB[0] = start + distance + width;
       vertC[0] = start + distance + width;
       vertD[0] = vertA[0] + width * 2;
-      vertC[1] = randomFloatBetween(0.8, 1.2);
-      vertices.forEach((vertex) => vertexData.push(...vertex));
+      vertC[1] = height;
+      vertA[2] = 0;
+      vertB[2] = DEPTH;
+      vertC[2] = 0;
+      vertD[2] = 0;
+      vertices.forEach((vertex) => this.vertexData.push(...vertex));
 
       vec3.subtract(vecA, vertC, vertA);
       vec3.subtract(vecB, vertB, vertA);
@@ -129,47 +129,12 @@ export default class Mountains {
       vec3.subtract(vecB, vertB, vertC);
       vec3.cross(normalB, vecA, vecB);
 
-      normals.forEach((normal) => normalData.push(...normal));
+      normals.forEach((normal) => this.normalData.push(...normal));
 
-      distance += width * 1.3;
+      distance += width * randomFloatBetween(0.7, 1.8);
     }
 
-
-    // console.log("vertex: ", vertexData);
-    // console.log("normal: ", normalData);
-    // console.log("index:" , indexData);
-
-    // vertexData = [
-    //   -0.5,  0.0, 0.0,
-    //    0.0,  0.0, 0.0,
-    //    0.0,  1.0, 0.0,
-
-    //    0.5,  0.0, 0.0,
-    // ];
-
-    // normalData = [
-    //   -0.5, -0.5, 0.0,
-    //    0.5, -0.5, 0.0,
-    //    0.0,  0.5, 0.0,
-
-    //   -0.5, -0.5, 0.0,
-    //    0.5, -0.5, 0.0,
-    //    0.0,  0.5, 0.0,
-    // ];
-
-    // indexData = [
-    //   0, 1, 2,
-    //   1, 3, 2
-    // ];
-
-    // indexData = [
-    //   0, 1, 2,
-    //   1, 3, 2
-    //   4, 5, 6
-    //   5, 7, 6
-    // ];
-
-    uvData = [
+    this.uvData = [
       0.0,  0.0,
       1.0,  0.0,
       0.5,  1.0,
@@ -179,10 +144,9 @@ export default class Mountains {
       0.5,  1.0,
     ]
 
-    vertexData = new Float32Array(vertexData);
-    indexData = new Uint16Array(indexData);
-    uvData = new Float32Array(uvData);
-    normalData = new Float32Array(normalData);
+    this.vertexData = new Float32Array(this.vertexData);
+    this.uvData = new Float32Array(this.uvData);
+    this.normalData = new Float32Array(this.normalData);
   }
 }
 

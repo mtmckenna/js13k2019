@@ -7,8 +7,6 @@ let QUAD = new Float32Array([
   0.5, 0.5, 0.0,
 ]);
 
-let DOT = new Float32Array([0, 0, 0]);
-
 let TRAIL = new Float32Array([
   -0.1, 1.0, 0.0,
   -0.1, 0.0, 0.0,
@@ -152,7 +150,6 @@ export {
   QUAD,
   QUAD_UVS,
   TRAIL,
-  DOT,
   CUBE,
   CUBE_INDICES,
   CUBE_NORMALS,

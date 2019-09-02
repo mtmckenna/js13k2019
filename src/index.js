@@ -1,7 +1,8 @@
 //https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
 
-import zzfx from "./lib/zzfx";
 import { mat4, vec3 } from "./lib/gl-matrix";
+import zzfx from "./lib/zzfx";
+import SoundEffect from "./sound-effect";
 import {
   oneOrMinusOne,
   randomFloatBetween,
@@ -34,8 +35,6 @@ textBox.classList.add("text")
 document.body.appendChild(textBox);
 setTimeout(() => displayText("Infinite Missiles"), 1);
 
-console.log(zzfx);
-
 const gameWidth = 20;
 const cameraPos = vec3.create();
 const lookAtPos = vec3.create();
@@ -54,6 +53,7 @@ const BAD_MISSILE_SHAKE_AMOUNT = 3.0;
 const GREEN = [0.2, 0.9, 0.2];
 const BLUE = [0.2, 0.2, 0.9];
 const PURPLE = [0.6, 0.2, 0.8];
+const launchSfx = new SoundEffect([0,,0.2322,,0.1669,0.8257,0.0746,-0.3726,,,,,,0.4334,0.1887,,0.0804,-0.1996,1,,,,,0.5]);
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -252,6 +252,8 @@ function fireMissile(event) {
   if (game.gameOver) startGame();
   if (!game.missileDome || game.missileDome.dead) return;
 
+  // launchSfx.play();
+  zzfx(1,.1,47,.9,.78,1.3,0,0,.05); // ZzFX 81596
   let touch = event;
   if (event.touches) touch = event.changedTouches[0];
   const worldCoords = unprojectPoint([touch.clientX, touch.clientY]);

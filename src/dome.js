@@ -7,6 +7,8 @@ import {
   setUvs,
 } from "./webgl-helpers";
 
+import SoundEffect from "./sound-effect";
+
 import VERTEX_SHADER from "./shaders/dome-vertex.glsl";
 import FRAGMENT_SHADER from "./shaders/dome-fragment.glsl";
 import { UNIFORM_NAMES } from "./models";
@@ -66,6 +68,7 @@ export default class Dome {
     this.exploded = false;
     this.times = { hit: 0, exploded: 0, death: 0 };
     this.alpha = 1;
+    this.explodeSfx = new SoundEffect([3,0.14,0.79,0.22,0.81,0.2472,,-0.0503,,,0.26,,,,,0.5637,,,1,,,,,0.5]);
 
     this.initVertexBuffers();
     this.update();
@@ -104,6 +107,7 @@ export default class Dome {
 
       if (!this.exploded) {
         this.exploded = true;
+        this.explodeSfx.play();
         this.times.exploded = time;
       }
 

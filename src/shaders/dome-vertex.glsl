@@ -21,7 +21,7 @@ void main() {
   highp vec4 eyeCoords = viewMatrix * modelMatrix * vec4(aPosition, 1.0);
   highp vec3 s = normalize(vec3(uLightPosition - eyeCoords));
 
-  vLightIntensity = 2.2 * uLd * uKd * max(dot(s, tnorm.xyz), 0.0);
+  vLightIntensity = 6.4 * uLd * uKd * max(dot(s, tnorm.xyz), 0.0);
   vUvs = aUvs;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
 }

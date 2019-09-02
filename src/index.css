@@ -24,11 +24,10 @@ canvas {
   width: 100%;
   opacity: 0;
   position: absolute;
-  font-size: 35px;
-  top: 20%;
+  font-size: 60px;
+  top: 10%;
   transition-property: opacity;
-  transition-delay: .5s;
-  transition-duration: 2.5s;
+  transition-duration: 2s;
 }
 
 .heat {
@@ -41,24 +40,5 @@ canvas {
   border-radius: 5px;
   background: #fff;
   position: absolute;
-}
-
-.fade-in {
-  animation: fade-in 2s ease-in-out;
-  animation-fill-mode: forwards;
-}
-
-.fade-out {
-  animation: fade-out 2s ease-in-out;
-  animation-fill-mode: forwards;
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+  opacity: .8;
 }

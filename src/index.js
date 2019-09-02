@@ -49,26 +49,32 @@ const viewMatrix = mat4.create();
 const projectionMatrix = mat4.create();
 const viewProjectionMatrix = mat4.create();
 const inverseViewProjectionMatrix = mat4.create();
-const GOOD_MISSILE_SPEED = 0.019;
-const BAD_MISSILE_SPEED = 0.0025;
+const GOOD_MISSILE_SPEED = 0.02;
+const BAD_MISSILE_SPEED  = 0.0020;
 const GOOD_MISSILE_SHAKE_AMOUNT = 0.5;
 const BAD_MISSILE_SHAKE_AMOUNT = 3.0;
 const GREEN = [0.2, 0.9, 0.2];
 const BLUE = [0.2, 0.2, 0.9];
 const PURPLE = [0.6, 0.2, 0.8];
-const launchSfx = new SoundEffect([0,,0.2322,,0.1669,0.8257,0.0746,-0.3726,,,,,,0.4334,0.1887,,0.0804,-0.1996,1,,,,,0.5]);
-const HEAT_RATE = .1;
+const HEAT_RATE = .2;
 const COOL_RATE = .002;
 const MIN_HEAT = .1;
+const launchSfx = new SoundEffect([0,,0.2322,,0.1669,0.8257,0.0746,-0.3726,,,,,,0.4334,0.1887,,0.0804,-0.1996,1,,,,,0.5]);
+const bounds = { width: -1, height: -1 };
 let scenary = [];
 let clickCoords = [];
 let missileDome = null;
-let timeLastBadMissileFiredAt = 0;
-let minTimeBetweenBadMissiles = 1000;
 let missileSpeedMultiplier = 1.0;
-let chanceOfBadMisslesFiring = 0.1;
 let heat = 1.0;
 let gameOver = true;
+let wave = 1;
+let waveStartTime = null;
+let waveOn = false;
+let waveDuration = 5000;
+let waveNumBadMissiles = 1;
+let waveMissileTimes = [];
+let waveBadMissileSpeed = BAD_MISSILE_SPEED;
+let waveNumBadMissilesRemaining = null;
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -77,7 +83,7 @@ game.viewProjectionMatrix = viewProjectionMatrix;
 game.inverseViewProjectionMatrix = inverseViewProjectionMatrix;
 game.drawables = [];
 
-game.bounds = { width: -1, height: -1 };
+
 game.camera = { staticPos: vec3.create() };
 game.shakeInfo = {
   amplitude: vec3.create(),
@@ -105,6 +111,30 @@ function shakeScreen(amount) {
   vec3.add(amplitude, amplitude, [amount, amount, amount]);
   vec3.set(amplitude, Math.min(MAX_AMP, amplitude[0]), Math.min(MAX_AMP, amplitude[1]), Math.min(MAX_AMP, amplitude[2]));
   vec3.set(dir, oneOrMinusOne(), oneOrMinusOne(), oneOrMinusOne());
+}
+
+function generateWave() {
+  waveStartTime = null;
+  waveNumBadMissiles += 2;
+  waveBadMissileSpeed += 0.00025;
+  waveDuration += 500;
+
+  waveMissileTimes = [];
+  while (waveMissileTimes.length < waveNumBadMissiles) {
+    waveMissileTimes.push(randomFloatBetween(0, waveDuration));
+  }
+
+  waveMissileTimes = waveMissileTimes.sort((a, b) => b - a);
+  waveMissileTimes[0] = waveDuration;
+  waveMissileTimes[waveMissileTimes.length - 1] = 0;
+}
+
+function startWave() {
+  waveOn = true;
+}
+
+function stopWave() {
+  waveOn = false;
 }
 
 function createDomes() {
@@ -148,11 +178,20 @@ function update(time) {
   if (!gameOver) launchEnemyMissiles(time);
 
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
+  waveNumBadMissilesRemaining = game.drawables.filter(d => d.type === "missile" && !d.good);
   game.domes = game.domes.filter((dome) => !dome.dead);
   heat = Math.min(heat + COOL_RATE, 1);
 
   checkCollisions(time);
   updateDrawables(time);
+
+  if (waveNumBadMissilesRemaining <= 0 && waveMissileTimes.length === 0 && waveOn) {
+    stopWave();
+    wave++;
+    generateWave();
+    displayWaveNum(1500);
+    setTimeout(() => startWave(), 2000);
+  }
 
   scenary.forEach((drawable) => drawable.update(time));
   draw(time);
@@ -160,13 +199,17 @@ function update(time) {
 
 function endGame() {
   gameOver = true;
+  stopWave();
   displayText("Game Over");
 }
 
 function launchEnemyMissiles(time) {
-  if (time - timeLastBadMissileFiredAt > minTimeBetweenBadMissiles) {
-    if (Math.random() < chanceOfBadMisslesFiring) {
-      const halfWidth = game.bounds.width / 2;
+  if (!waveOn) return;
+  if (!waveStartTime) waveStartTime = time;
+  const timeInWave = time - waveStartTime;
+  const nextTime = waveMissileTimes[waveMissileTimes.length - 1];
+  if (nextTime < timeInWave) {
+      const halfWidth = bounds.width / 2;
       const launchX = randomFloatBetween(-halfWidth, halfWidth);
       const townToAimAt = vec3.create();
       vec3.copy(townToAimAt, game.domes[randomIntBetween(0, game.domes.length - 1)].position);
@@ -174,16 +217,16 @@ function launchEnemyMissiles(time) {
       townToAimAt[0] += jitter;
 
       game.drawables.push(
-        new Missile(game,
+        new Missile(
+          game,
           time,
-          [launchX, game.bounds.height, missileDome.position[2]],
+          [launchX, bounds.height, missileDome.position[2]],
           townToAimAt,
           false,
-          BAD_MISSILE_SPEED * missileSpeedMultiplier
+          waveBadMissileSpeed
         )
       );
-      timeLastBadMissileFiredAt = time;
-    }
+      waveMissileTimes.pop();
   }
 }
 
@@ -290,8 +333,24 @@ function unprojectPoint(point, z = 0) {
 function startGame() {
   gameOver = false;
   game.drawables = [];
+  wave = 1;
+  waveStartTime = null;
+  waveOn = false;
+  waveDuration = 5000;
+  waveNumBadMissiles = 1;
+  waveMissileTimes = [];
+  waveBadMissileSpeed = BAD_MISSILE_SPEED;
+  waveNumBadMissilesRemaining = null;
   createDomes();
-  hideText();
+  hideText(1000);
+  displayWaveNum(3100);
+  generateWave();
+  startWave();
+}
+
+function displayWaveNum(delay = 0) {
+  displayText(`Wave ${wave}`, delay);
+  hideText(delay * 2);
 }
 
 function resetCamera() {
@@ -321,17 +380,17 @@ function resize() {
   dimensions[1] = height;
 
   // Size the horizontal bounds by adjusting z postion of the camera
-  const bounds = unprojectPoint([width, height]);
-  const z = Math.min(gameWidth / bounds[0], farPlane);
+  const worldBounds = unprojectPoint([width, height]);
+  const z = Math.min(gameWidth / worldBounds[0], farPlane);
   vec3.set(cameraPos, 0, 0, z);
   vec3.set(lookAtPos, 0, 0, -1);
   resetMatrices();
 
   // Move 0 on the y-axis to the bottom of the screen
   const bottomOfWorld = unprojectPoint([width, height]);
-  game.bounds.width = Math.abs(bottomOfWorld[0] * 2);
-  game.bounds.height = Math.abs(bottomOfWorld[1] * 2);
-  const heatBarOffset = game.bounds.height * .04;
+  bounds.width = Math.abs(bottomOfWorld[0] * 2);
+  bounds.height = Math.abs(bottomOfWorld[1] * 2);
+  const heatBarOffset = bounds.height * .04;
   const y = -bottomOfWorld[1] - heatBarOffset;
   vec3.set(cameraPos, 0, y, z);
   vec3.copy(game.camera.staticPos, cameraPos);
@@ -343,11 +402,11 @@ function resize() {
 
   // Reset stars
   let numStars = 200;
-  const mountainY = game.bounds.height * .2;
+  const mountainY = bounds.height * .2;
 
   for (let i = 0; i < numStars; i++) {
-    const x = randomFloatBetween(-game.bounds.width, game.bounds.width);
-    const y = randomFloatBetween(mountainY, game.bounds.height);
+    const x = randomFloatBetween(-bounds.width, bounds.width);
+    const y = randomFloatBetween(mountainY, bounds.height);
     const z = randomFloatBetween(-2, -40);
     const star = new Moon(game, [x, y, z], true);
     scenary.push(star);
@@ -363,17 +422,17 @@ function resize() {
   vec3.set(moon.position, topRightOfWorld[0], topRightOfWorld[1], 0);;
 
   // Make bad missiles faster the game screen is taller
-  missileSpeedMultiplier = Math.abs(game.bounds.height / 25);
+  missileSpeedMultiplier = 1.0;
 
   // Reset ground
   const groundDepth = 50;
-  const ground = new Cube(game, [0, -2, -groundDepth], [game.bounds.width * 2, 1, groundDepth]);
+  const ground = new Cube(game, [0, -2, -groundDepth], [bounds.width * 2, 1, groundDepth]);
   scenary.push(ground);
 
   // Reset mountains
-  const mountainHeight = (game.bounds.height - mountainY) * .60;
-  const mountainStart = -game.bounds.width / 2 - game.bounds.width * .25;
-  const mountainEnd = game.bounds.width + game.bounds.width * .25;
+  const mountainHeight = (bounds.height - mountainY) * .60;
+  const mountainStart = -bounds.width / 2 - bounds.width * .25;
+  const mountainEnd = bounds.width + bounds.width * .25;
 
   const mountains1 = new Mountains(game, [mountainStart, mountainY, 0], [mountainEnd, mountainHeight * 1.0, 0], [0.0, 0.3, 0.5]);
   const mountains2 = new Mountains(game, [mountainStart, mountainY, 1], [mountainEnd, mountainHeight * 0.7, 0], [0.0, 0.5, 0.5]);
@@ -410,14 +469,15 @@ function configurePrograms(gl) {
   Cube.configureProgram(gl);
 }
 
-function displayText(text) {
-  textBox.innerText = text;
-  textBox.style.opacity = 1.0;
+function displayText(text, delay = 0) {
+  setTimeout(() => {
+    textBox.innerText = text;
+    textBox.style.opacity = 1.0;
+  }, delay);
 }
 
-function hideText(now = true) {
-  const time = now ? 0 : 3000;
-  setTimeout(() => textBox.style.opacity = 0.0, time);
+function hideText(delay = 0) {
+  setTimeout(() => textBox.style.opacity = 0.0, delay);
 }
 
 function updateHeatBar() {

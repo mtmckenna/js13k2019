@@ -1,7 +1,6 @@
 precision highp float;
 
 attribute vec3 aPosition;
-// attribute vec2 aUvs;
 attribute vec3 aNormal;
 
 uniform mat4 modelMatrix;
@@ -19,6 +18,5 @@ void main() {
   vNormal = aNormal;
   float light = dot(normalize(aNormal), normalize(uLightPosition));
   vLight = uLightColor * light;
-  // vUvs = aUvs;
   gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
 }

@@ -19,8 +19,6 @@ void main() {
   float r = 1.0 - uGood;
   float g = uGood;
 
-  // gl_FragColor = vec4(vUvs.y, 0.0, 0.0, 1.0);
-  // return;
   gl_FragColor = vec4(r, g, 0.2, 1.0) * alpha;
 }
 

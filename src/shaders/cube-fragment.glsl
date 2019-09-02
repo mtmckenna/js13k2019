@@ -4,9 +4,7 @@ uniform vec3 uColor;
 uniform vec3 uLightPosition;
 
 varying vec4 vWorldPos;
-varying vec3 vPosition;
 varying vec3 vLighting;
-varying vec2 vUvs;
 
 float c1 = 0.01;
 float c2 = 0.003;

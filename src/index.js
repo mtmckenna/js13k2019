@@ -52,9 +52,7 @@ const BAD_MISSILE_SPEED = 0.0025;
 const GOOD_MISSILE_SHAKE_AMOUNT = 0.5;
 const BAD_MISSILE_SHAKE_AMOUNT = 3.0;
 const GREEN = [0.2, 0.9, 0.2];
-const RED = [0.9, 0.2, 0.2];
 const BLUE = [0.2, 0.2, 0.9];
-const GOLD = [1.0, 0.84, 0.0];
 const PURPLE = [0.6, 0.2, 0.8];
 
 game.gl = gl;
@@ -88,14 +86,7 @@ gl.depthFunc(gl.LESS);
 
 const townLocations = [[-gameWidth + 4, 1, 0], [0, 1, 0], [gameWidth - 4, 1, 0]];
 
-const moon = new Moon(game, [0, 0, 0]);
-game.scenary.push(moon);
 createDomes();
-
-let mountains1 = null;
-let mountains2 = null;
-let mountains3 = null;
-let ground = null;
 
 configurePrograms(gl);
 
@@ -146,9 +137,9 @@ function update(time) {
   updateViewProjection();
   requestAnimationFrame(update);
 
+  launchPlayerMissiles(time);
   if (!game.gameOver) {
     launchEnemyMissiles(time);
-    launchPlayerMissiles(time);
   }
 
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
@@ -258,7 +249,6 @@ function checkCollisions(time) {
 function fireMissile(event) {
   if (game.gameOver) {
     startGame();
-    return;
   }
 
   let touch = event;
@@ -289,7 +279,6 @@ function fireMissile(event) {
 }
 
 function startGame() {
-  console.log('start game');
   game.gameOver = false;
   game.drawables = [];
   createDomes();
@@ -347,7 +336,25 @@ function resize() {
   vec3.set(lookAtPos, 0, -bottomOfWorld[1], -1);
   updateViewProjection();
 
+  // Reset scenary
+  game.scenary = [];
+
+  // Reset stars
+  let numStars = 200;
+  const mountainY = game.bounds.height * .2;
+
+  for (let i = 0; i < numStars; i++) {
+    const x = randomFloatBetween(-game.bounds.width, game.bounds.width);
+    const y = randomFloatBetween(mountainY, game.bounds.height);
+    const z = randomFloatBetween(-2, -40);
+    const star = new Moon(game, [x, y, z], true);
+    game.scenary.push(star);
+  }
+
   // Place moon
+  const moon = new Moon(game, [0, 0, 0]);
+  game.scenary.push(moon);
+
   const radius = gameWidth * .1;
   moon.radius = radius;
   const topRightOfWorld = unprojectPoint([width * .9, height * .1]);
@@ -362,39 +369,19 @@ function resize() {
   game.missileSpeedMultiplier = Math.abs(game.bounds.height / 25);
 
   // Reset ground
-  if (ground) {
-    const groundIndex = game.scenary.indexOf(ground);
-    game.scenary.splice(groundIndex, 1);
-  }
-
   const groundDepth = 50;
-  ground = new Cube(game, [0, -2, -groundDepth], [game.bounds.width * 2, 1, groundDepth]);
+  const ground = new Cube(game, [0, -2, -groundDepth], [game.bounds.width * 2, 1, groundDepth]);
   game.scenary.push(ground);
 
   // Reset mountains
-  if (mountains1) {
-    const mountainIndex = game.scenary.indexOf(mountains1);
-    game.scenary.splice(mountainIndex, 1);
-  }
 
-  if (mountains2) {
-    const mountainIndex = game.scenary.indexOf(mountains2);
-    game.scenary.splice(mountainIndex, 1);
-  }
-
-  if (mountains3) {
-    const mountainIndex = game.scenary.indexOf(mountains3);
-    game.scenary.splice(mountainIndex, 1);
-  }
-
-  const mountainY = game.bounds.height * .2;
   const mountainHeight = (game.bounds.height - mountainY) * .60;
   const mountainStart = -game.bounds.width / 2 - game.bounds.width * .25;
   const mountainEnd = game.bounds.width + game.bounds.width * .25;
 
-  mountains1 = new Mountains(game, [mountainStart, mountainY, 0], [mountainEnd, mountainHeight * 1.0, 0], [0.0, 0.3, 0.5]);
-  mountains2 = new Mountains(game, [mountainStart, mountainY, 1], [mountainEnd, mountainHeight * 0.7, 0], [0.0, 0.5, 0.5]);
-  mountains3 = new Mountains(game, [mountainStart, mountainY, 2], [mountainEnd, mountainHeight * 0.3, 0], [0.0, 0.4, 0.5]);
+  const mountains1 = new Mountains(game, [mountainStart, mountainY, 0], [mountainEnd, mountainHeight * 1.0, 0], [0.0, 0.3, 0.5]);
+  const mountains2 = new Mountains(game, [mountainStart, mountainY, 1], [mountainEnd, mountainHeight * 0.7, 0], [0.0, 0.5, 0.5]);
+  const mountains3 = new Mountains(game, [mountainStart, mountainY, 2], [mountainEnd, mountainHeight * 0.3, 0], [0.0, 0.4, 0.5]);
   game.scenary.push(mountains1);
   game.scenary.push(mountains2);
   game.scenary.push(mountains3);

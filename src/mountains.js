@@ -35,14 +35,13 @@ export default class Mountains {
     uvBuffer = gl.createBuffer();
   }
 
-  constructor(game, position, avgDimensions, color) {
+  constructor(game, position, dimensions, color) {
     this.type = "mountains";
     this.game = game;
     this.gl = this.game.gl;
     this.position = position;
     this.color = color;
-    this.avgDimensions = avgDimensions;
-    this.dimensions = avgDimensions;
+    this.dimensions = dimensions;
     this.modelMatrix = mat4.create();
     this.normalMatrix = mat4.create();
 

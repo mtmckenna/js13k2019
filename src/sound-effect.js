@@ -2,27 +2,21 @@ const AudioContext = window.AudioContext || window.webkitAudioContext;
 let context = new AudioContext();
 
 export default class SoundEffect {
-  constructor(data, loop = false) {
-    this.loop = loop;
-    this.ended = false;
+  constructor(data) {
+    this.ended = true;
     context.decodeAudioData(jsfxr(data), (buffer) => {
       this.buffer = buffer;
     });
   }
 
   play() {
-    if (!this.buffer || this.context) return;
+    if (!this.buffer) return;
     this.source = context.createBufferSource();
-    this.source.loop = this.loop;
     this.source.buffer = this.buffer;
     this.source.connect(context.destination);
     this.source.start(0);
+    this.ended = false;
     this.source.addEventListener("ended", () => this.ended = true );
-  }
-
-  stop() {
-    if (!this.source || this.ended) { return; }
-    this.source.stop();
   }
 }
 

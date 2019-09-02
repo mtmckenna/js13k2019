@@ -69,7 +69,7 @@ export default class Dome {
     this.times = { hit: 0, exploded: 0, death: 0 };
     this.alpha = 1;
     this.explodeSfx = new SoundEffect([3,0.14,0.79,0.22,0.81,0.2472,,-0.0503,,,0.26,,,,,0.5637,,,1,,,,,0.5]);
-    this.hitSfx = new SoundEffect([0,,0.1251,,0.1622,0.12,,,,,,,,0.1687,,,,,1,,,0.1,,0.5], true);
+    this.hitSfx = new SoundEffect([0,,0.1251,,0.1622,0.12,,,,,,,,0.1687,,,,,1,,,0.1,,0.5]);
 
     this.initVertexBuffers();
     this.update();
@@ -93,12 +93,12 @@ export default class Dome {
     mat4.transpose(normalMatrix, normalMatrix);
     if (time - this.times.hit > HIT_TIME) {
       this.hitFloat = 0.0;
-      this.hitSfx.stop();
     }
 
     if (this.hitFloat > 0) {
       this.health -= DAMAGE;
       this.health = Math.max(this.health, 0);
+      if (this.hitSfx.ended) this.hitSfx.play();
     }
 
     if (this.health < .20 && this.health > 0) {
@@ -106,8 +106,6 @@ export default class Dome {
     }
 
     if (this.health <= 0) {
-      this.hitSfx.stop();
-
       if (!this.exploded) {
         this.exploded = true;
         this.explodeSfx.play();
@@ -154,10 +152,6 @@ export default class Dome {
   }
 
   hit(time) {
-    if (!this.hitFloat) {
-      this.hitSfx.play();
-    }
-
     this.times.hit = time;
     this.hitFloat = 1.0;
   }

@@ -138,6 +138,7 @@ function update(time) {
   updateViewProjection();
   requestAnimationFrame(update);
 
+
   launchPlayerMissiles(time);
   if (!game.gameOver) {
     launchEnemyMissiles(time);
@@ -146,10 +147,11 @@ function update(time) {
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   game.domes = game.domes.filter((dome) => !dome.dead);
 
+
   updateDrawables(time)
+  checkCollisions(time);
   game.scenary.forEach((drawable) => drawable.update(time));
   draw(time);
-  checkCollisions(time);
 }
 
 function gameOver() {

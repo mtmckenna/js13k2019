@@ -24,7 +24,6 @@ void main() {
   float halo = 1.0 - smoothstep(0.2, 0.6, dist);
   float alpha = max(cutOut, halo);
   alpha -= uSeed.x * uStar;
-  float twinkle = (sin(uTime * uSeed.x / 500.0) - 1.0) / 2.0 * uStar * uSeed.y;
-  alpha -= twinkle;
-  gl_FragColor = vec4(vec3(.86), 1.0) * alpha;
+  float twinkle = sin(uTime * uSeed.x / 60.0) / 2.0 * uStar * uSeed.y;
+  gl_FragColor = vec4(vec3(.86) + twinkle, 1.0) * alpha;
 }

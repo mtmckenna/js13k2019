@@ -41,7 +41,7 @@ export default class Moon {
 
     // first seed determines opacity of star
     // second seed determines if star twinkles
-    this.seed = [Math.random(), Math.round(randomFloatBetween(0, .75))];
+    this.seed = [randomFloatBetween(0, 0.3), Math.round(randomFloatBetween(0, 0.75))];
   }
 
   update(time) {

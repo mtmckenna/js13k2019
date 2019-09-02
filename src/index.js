@@ -422,8 +422,10 @@ function hideText(now = true) {
 }
 
 function updateHeatBar() {
-  const width = Math.max(heat / .98 * 100 - 4, 0);
-  heatBox.style.width = `${width}%`;
+  const greenWidth = `${heat * 100}%`;
+  const redWidth = `${(1 - heat) * 100}%`;
+  heatBox.style.background = `linear-gradient(to right, rgb(0, 115, 115) ${greenWidth}, rgb(200, 35, 106) ${greenWidth} ${redWidth})`;
+
 }
 
 // Disable scrolling

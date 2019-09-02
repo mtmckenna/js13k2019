@@ -33,6 +33,7 @@ canvas {
 
 .heat {
   z-index: 2;
+  width: 98%;
   height: 2%;
   bottom: 2%;
   left: 1%;
@@ -40,7 +41,6 @@ canvas {
   border-radius: 5px;
   background: #fff;
   position: absolute;
-  transition: width .2s;
 }
 
 .fade-in {

@@ -26,5 +26,6 @@ void main() {
   alpha -= uSeed.x * uStar;
   float twinkle = sin(uTime * uSeed.x / 500.0) * uStar * uSeed.y;
   alpha -= twinkle;
+  alpha = clamp(alpha, 0.1, 1.0);
   gl_FragColor = vec4(vec3(.86), 1.0) * alpha;
 }

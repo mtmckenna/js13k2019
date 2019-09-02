@@ -53,6 +53,14 @@ const GREEN = [0.2, 0.9, 0.2];
 const BLUE = [0.2, 0.2, 0.9];
 const PURPLE = [0.6, 0.2, 0.8];
 const launchSfx = new SoundEffect([0,,0.2322,,0.1669,0.8257,0.0746,-0.3726,,,,,,0.4334,0.1887,,0.0804,-0.1996,1,,,,,0.5]);
+let scenary = [];
+let clickCoords = [];
+let missileDome = null;
+let timeLastBadMissileFiredAt = 0;
+let minTimeBetweenBadMissiles = 1000;
+let missileSpeedMultiplier = 1.0;
+let chanceOfBadMisslesFiring = 0.1;
+let gameOver = true;
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -60,13 +68,7 @@ game.projectionMatrix = projectionMatrix;
 game.viewProjectionMatrix = viewProjectionMatrix;
 game.inverseViewProjectionMatrix = inverseViewProjectionMatrix;
 game.drawables = [];
-game.scenary = [];
-game.missileDome = null;
-game.clickCoords = [];
-game.timeLastBadMissileFiredAt = 0;
-game.minTimeBetweenBadMissiles = 1000;
-game.missileSpeedMultiplier = 1.0;
-game.chanceOfBadMisslesFiring = 0.1;
+
 game.bounds = { width: -1, height: -1 };
 game.camera = { staticPos: vec3.create() };
 game.shakeInfo = {
@@ -74,7 +76,7 @@ game.shakeInfo = {
   dir: vec3.create(),
   pos: vec3.create(),
 }
-game.gameOver = true;
+
 
 resetMatrices();
 
@@ -108,7 +110,7 @@ function createDomes() {
   game.drawables.push(dome1);
   game.drawables.push(dome2);
   game.drawables.push(dome3);
-  game.missileDome = dome2;
+  missileDome = dome2;
 }
 
 function updateShake(time) {
@@ -129,7 +131,7 @@ function updateShake(time) {
 }
 
 function update(time) {
-  if (game.domes.length <= 0) gameOver();
+  if (game.domes.length <= 0) endGame();
   resize();
   updateShake(time);
   const { shakeInfo } = game;
@@ -139,7 +141,7 @@ function update(time) {
 
 
   launchPlayerMissiles(time);
-  if (!game.gameOver) {
+  if (!gameOver) {
     launchEnemyMissiles(time);
   }
 
@@ -149,18 +151,18 @@ function update(time) {
 
   updateDrawables(time)
   checkCollisions(time);
-  game.scenary.forEach((drawable) => drawable.update(time));
+  scenary.forEach((drawable) => drawable.update(time));
   draw(time);
 }
 
-function gameOver() {
-  game.gameOver = true;
+function endGame() {
+  gameOver = true;
   displayText("Game Over");
 }
 
 function launchEnemyMissiles(time) {
-  if (time - game.timeLastBadMissileFiredAt > game.minTimeBetweenBadMissiles) {
-    if (Math.random() < game.chanceOfBadMisslesFiring) {
+  if (time - timeLastBadMissileFiredAt > minTimeBetweenBadMissiles) {
+    if (Math.random() < chanceOfBadMisslesFiring) {
       const halfWidth = game.bounds.width / 2;
       const launchX = randomFloatBetween(-halfWidth, halfWidth);
       const townToAimAt = vec3.create();
@@ -174,10 +176,10 @@ function launchEnemyMissiles(time) {
           [launchX, game.bounds.height, 0.0],
           townToAimAt,
           false,
-          BAD_MISSILE_SPEED * game.missileSpeedMultiplier
+          BAD_MISSILE_SPEED * missileSpeedMultiplier
         )
       );
-      game.timeLastBadMissileFiredAt = time;
+      timeLastBadMissileFiredAt = time;
     }
   }
 }
@@ -198,10 +200,10 @@ function updateDrawables(time) {
 }
 
 function launchPlayerMissiles(time) {
-  game.clickCoords.forEach((coords) => game.drawables.push(
-    new Missile(game, time, [0, 3.5, 0], coords, true, GOOD_MISSILE_SPEED * game.missileSpeedMultiplier)
+  clickCoords.forEach((coords) => game.drawables.push(
+    new Missile(game, time, [0, 3.5, 0], coords, true, GOOD_MISSILE_SPEED * missileSpeedMultiplier)
   ));
-  game.clickCoords = [];
+  clickCoords = [];
 }
 
 function draw(time) {
@@ -209,7 +211,7 @@ function draw(time) {
   gl.clearDepth(1.0);                 // Clear everything
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  game.scenary.forEach((drawable) => drawable.draw(time));
+  scenary.forEach((drawable) => drawable.draw(time));
   game.drawables.forEach((drawable) => drawable.draw(time));
 }
 
@@ -249,14 +251,14 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
-  if (game.gameOver) startGame();
-  if (!game.missileDome || game.missileDome.dead) return;
+  if (gameOver) startGame();
+  if (!missileDome || missileDome.dead) return;
 
   launchSfx.play();
   let touch = event;
   if (event.touches) touch = event.changedTouches[0];
   const worldCoords = unprojectPoint([touch.clientX, touch.clientY]);
-  game.clickCoords.push([worldCoords[0], worldCoords[1], 0]);
+  clickCoords.push([worldCoords[0], worldCoords[1], 0]);
 }
 
   function unprojectPoint(point) {
@@ -281,7 +283,7 @@ function fireMissile(event) {
 }
 
 function startGame() {
-  game.gameOver = false;
+  gameOver = false;
   game.drawables = [];
   createDomes();
   hideText();
@@ -333,7 +335,7 @@ function resize() {
   resetMatrices();
 
   // Reset scenary
-  game.scenary = [];
+  scenary = [];
 
   // Reset stars
   let numStars = 200;
@@ -344,12 +346,12 @@ function resize() {
     const y = randomFloatBetween(mountainY, game.bounds.height);
     const z = randomFloatBetween(-2, -40);
     const star = new Moon(game, [x, y, z], true);
-    game.scenary.push(star);
+    scenary.push(star);
   }
 
   // Place moon
   const moon = new Moon(game, [0, 0, 0]);
-  game.scenary.push(moon);
+  scenary.push(moon);
 
   const radius = gameWidth * .1;
   moon.radius = radius;
@@ -359,12 +361,12 @@ function resize() {
   resetMatrices();
 
   // Make bad missiles faster the game screen is taller
-  game.missileSpeedMultiplier = Math.abs(game.bounds.height / 25);
+  missileSpeedMultiplier = Math.abs(game.bounds.height / 25);
 
   // Reset ground
   const groundDepth = 50;
   const ground = new Cube(game, [0, -2, -groundDepth], [game.bounds.width * 2, 1, groundDepth]);
-  game.scenary.push(ground);
+  scenary.push(ground);
 
   // Reset mountains
 
@@ -375,9 +377,9 @@ function resize() {
   const mountains1 = new Mountains(game, [mountainStart, mountainY, 0], [mountainEnd, mountainHeight * 1.0, 0], [0.0, 0.3, 0.5]);
   const mountains2 = new Mountains(game, [mountainStart, mountainY, 1], [mountainEnd, mountainHeight * 0.7, 0], [0.0, 0.5, 0.5]);
   const mountains3 = new Mountains(game, [mountainStart, mountainY, 2], [mountainEnd, mountainHeight * 0.3, 0], [0.0, 0.4, 0.5]);
-  game.scenary.push(mountains1);
-  game.scenary.push(mountains2);
-  game.scenary.push(mountains3);
+  scenary.push(mountains1);
+  scenary.push(mountains2);
+  scenary.push(mountains3);
 }
 
 function resetMatrices() {

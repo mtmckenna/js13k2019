@@ -108,6 +108,9 @@ export default class Dome {
       }
 
       this.alpha = Math.max(1.0 - (time - this.times.exploded) / DEATH_FADE_TIME, 0.0);
+      if (this.alpha <= 0) {
+        this.dead = true;
+      }
     }
   }
 

@@ -1,6 +1,6 @@
 //https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
 
-import TinyMusic from "./lib/tinymusic";
+import zzfx from "./lib/zzfx";
 import { mat4, vec3 } from "./lib/gl-matrix";
 import {
   oneOrMinusOne,
@@ -34,7 +34,7 @@ textBox.classList.add("text")
 document.body.appendChild(textBox);
 setTimeout(() => displayText("Infinite Missiles"), 1);
 
-console.log(TinyMusic);
+console.log(zzfx);
 
 const gameWidth = 20;
 const cameraPos = vec3.create();
@@ -76,7 +76,7 @@ game.shakeInfo = {
   dir: vec3.create(),
   pos: vec3.create(),
 }
-game.started = false;
+game.gameOver = true;
 
 mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
 mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
@@ -89,13 +89,8 @@ gl.depthFunc(gl.LESS);
 const townLocations = [[-gameWidth + 4, 1, 0], [0, 1, 0], [gameWidth - 4, 1, 0]];
 
 const moon = new Moon(game, [0, 0, 0]);
-const dome1 = new Dome(game, [townLocations[0][0], townLocations[0][1], townLocations[0][2] - 2], PURPLE);
-const dome2 = new Dome(game, [townLocations[1][0], townLocations[1][1], townLocations[1][2] - 2], GREEN);
-const dome3 = new Dome(game, [townLocations[2][0], townLocations[2][1], townLocations[2][2] - 2], BLUE);
 game.scenary.push(moon);
-game.drawables.push(dome1);
-game.drawables.push(dome2);
-game.drawables.push(dome3);
+createDomes();
 
 let mountains1 = null;
 let mountains2 = null;
@@ -113,6 +108,16 @@ function shakeScreen(amount) {
   vec3.add(amplitude, amplitude, [amount, amount, amount]);
   vec3.set(amplitude, Math.min(MAX_AMP, amplitude[0]), Math.min(MAX_AMP, amplitude[1]), Math.min(MAX_AMP, amplitude[2]));
   vec3.set(dir, oneOrMinusOne(), oneOrMinusOne(), oneOrMinusOne());
+}
+
+function createDomes() {
+  const dome1 = new Dome(game, [townLocations[0][0], townLocations[0][1], townLocations[0][2] - 2], PURPLE);
+  const dome2 = new Dome(game, [townLocations[1][0], townLocations[1][1], townLocations[1][2] - 2], GREEN);
+  const dome3 = new Dome(game, [townLocations[2][0], townLocations[2][1], townLocations[2][2] - 2], BLUE);
+  game.domes = [dome1, dome2, dome3];
+  game.drawables.push(dome1);
+  game.drawables.push(dome2);
+  game.drawables.push(dome3);
 }
 
 function updateShake(time) {
@@ -133,18 +138,40 @@ function updateShake(time) {
 }
 
 function update(time) {
+  if (game.domes.length <= 0) gameOver();
   resize();
   updateShake(time);
   const { shakeInfo } = game;
   vec3.add(cameraPos, game.camera.staticPos, shakeInfo.pos);
   updateViewProjection();
+  requestAnimationFrame(update);
 
+  if (!game.gameOver) {
+    launchEnemyMissiles(time);
+    launchPlayerMissiles(time);
+  }
+
+  game.drawables = game.drawables.filter((drawable) => !drawable.dead);
+  game.domes = game.domes.filter((dome) => !dome.dead);
+
+  updateDrawables(time)
+  game.scenary.forEach((drawable) => drawable.update(time));
+  draw(time);
+  checkCollisions(time);
+}
+
+function gameOver() {
+  game.gameOver = true;
+  displayText("Game Over");
+}
+
+function launchEnemyMissiles(time) {
   if (time - game.timeLastBadMissileFiredAt > game.minTimeBetweenBadMissiles) {
     if (Math.random() < game.chanceOfBadMisslesFiring) {
       const halfWidth = game.bounds.width / 2;
       const launchX = randomFloatBetween(-halfWidth, halfWidth);
       const townToAimAt = vec3.create();
-      vec3.copy(townToAimAt, townLocations[randomIntBetween(0, townLocations.length - 1)]);
+      vec3.copy(townToAimAt, game.domes[randomIntBetween(0, game.domes.length - 1)].position);
       const jitter = randomFloatBetween(-0.1, 0.1);
       townToAimAt[0] += jitter;
 
@@ -160,12 +187,9 @@ function update(time) {
       game.timeLastBadMissileFiredAt = time;
     }
   }
+}
 
-  game.clickCoords.forEach((coords) => game.drawables.push(
-    new Missile(game, time, [0, 3.5, 0], coords, true, GOOD_MISSILE_SPEED * game.missileSpeedMultiplier)
-    ));
-  game.clickCoords = [];
-  game.drawables = game.drawables.filter((drawable) => !drawable.dead);
+function updateDrawables(time) {
   game.drawables.forEach((drawable) => {
     if (drawable.type === "missile") {
       if (drawable.maybeExplode(time)) {
@@ -178,10 +202,13 @@ function update(time) {
     }
     drawable.update(time);
   });
-  game.scenary.forEach((drawable) => drawable.update(time));
-  draw(time);
-  checkCollisions(time);
-  requestAnimationFrame(update);
+}
+
+function launchPlayerMissiles(time) {
+  game.clickCoords.forEach((coords) => game.drawables.push(
+    new Missile(game, time, [0, 3.5, 0], coords, true, GOOD_MISSILE_SPEED * game.missileSpeedMultiplier)
+  ));
+  game.clickCoords = [];
 }
 
 function draw(time) {
@@ -229,7 +256,7 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
-  if (!game.started) {
+  if (game.gameOver) {
     startGame();
     return;
   }
@@ -262,7 +289,10 @@ function fireMissile(event) {
 }
 
 function startGame() {
-  game.started = true;
+  console.log('start game');
+  game.gameOver = false;
+  game.drawables = [];
+  createDomes();
   hideText();
 }
 

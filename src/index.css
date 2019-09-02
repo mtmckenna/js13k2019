@@ -31,6 +31,17 @@ canvas {
   transition-duration: 2.5s;
 }
 
+.heat {
+  z-index: 2;
+  height: 2%;
+  width: 98%;
+  bottom: 2%;
+  left: 1%;
+  background-color: rgb(64, 146, 82);
+  border: 1px solid rgb(131, 178, 214);
+  position: absolute;
+}
+
 .fade-in {
   animation: fade-in 2s ease-in-out;
   animation-fill-mode: forwards;

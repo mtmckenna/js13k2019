@@ -34,6 +34,10 @@ textBox.classList.add("text")
 document.body.appendChild(textBox);
 setTimeout(() => displayText("Infinite Missiles"), 1);
 
+const heatBox = document.createElement("div");
+heatBox.classList.add("heat")
+document.body.appendChild(heatBox);
+
 const gameWidth = 20;
 const cameraPos = vec3.create();
 const lookAtPos = vec3.create();
@@ -60,6 +64,7 @@ let timeLastBadMissileFiredAt = 0;
 let minTimeBetweenBadMissiles = 1000;
 let missileSpeedMultiplier = 1.0;
 let chanceOfBadMisslesFiring = 0.1;
+let heat = 1.0;
 let gameOver = true;
 
 game.gl = gl;
@@ -77,19 +82,15 @@ game.shakeInfo = {
   pos: vec3.create(),
 }
 
-
-resetMatrices();
-
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
 gl.depthFunc(gl.LESS);
+// gl.enable(gl.CULL_FACE);
+// gl.cullFace(gl.BACK);
+configurePrograms(gl);
 
 const townLocations = [[-gameWidth + 4, 1, 0], [0, 1, 0], [gameWidth - 4, 1, 0]];
-
 createDomes();
-
-configurePrograms(gl);
 
 requestAnimationFrame(update);
 
@@ -139,7 +140,6 @@ function update(time) {
   resetMatrices();
   requestAnimationFrame(update);
 
-
   launchPlayerMissiles(time);
   if (!gameOver) {
     launchEnemyMissiles(time);
@@ -147,7 +147,6 @@ function update(time) {
 
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   game.domes = game.domes.filter((dome) => !dome.dead);
-
 
   updateDrawables(time)
   checkCollisions(time);
@@ -293,10 +292,7 @@ function resetCamera() {
   vec3.set(cameraPos, 0, 0, 1);
   vec3.set(lookAtPos, 0, 0, -1);
   resetMatrices();
-  // gl.enable(gl.CULL_FACE);
-  // gl.cullFace(gl.BACK);
 }
-
 
 function resize() {
   const height = window.innerHeight;
@@ -329,9 +325,11 @@ function resize() {
   const bottomOfWorld = unprojectPoint([width, height], inverseViewProjectionMatrix);
   game.bounds.width = Math.abs(bottomOfWorld[0] * 2);
   game.bounds.height = Math.abs(bottomOfWorld[1] * 2);
-  vec3.set(cameraPos, 0, -bottomOfWorld[1], z);
+  const heatBarOffset = game.bounds.height * .04;
+  const y = -bottomOfWorld[1] - heatBarOffset;
+  vec3.set(cameraPos, 0, y, z);
   vec3.copy(game.camera.staticPos, cameraPos);
-  vec3.set(lookAtPos, 0, -bottomOfWorld[1], -1);
+  vec3.set(lookAtPos, 0, y, -1);
   resetMatrices();
 
   // Reset scenary
@@ -358,8 +356,6 @@ function resize() {
   const topRightOfWorld = unprojectPoint([width * .9, height * .1]);
   vec3.set(moon.position, topRightOfWorld[0], topRightOfWorld[1], 0);;
 
-  resetMatrices();
-
   // Make bad missiles faster the game screen is taller
   missileSpeedMultiplier = Math.abs(game.bounds.height / 25);
 
@@ -369,7 +365,6 @@ function resize() {
   scenary.push(ground);
 
   // Reset mountains
-
   const mountainHeight = (game.bounds.height - mountainY) * .60;
   const mountainStart = -game.bounds.width / 2 - game.bounds.width * .25;
   const mountainEnd = game.bounds.width + game.bounds.width * .25;
@@ -387,7 +382,6 @@ function resetMatrices() {
   resetViewMatrix();
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
   mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
-
 }
 
 function resetViewMatrix() {

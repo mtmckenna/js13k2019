@@ -26,6 +26,9 @@ let program = null;
 let positionBuffer = null;
 let uvBuffer = null;
 
+const goodExplodeSfx = new SoundEffect([3,,0.1265,0.7565,0.4248,0.0688,,0.0011,,,,,,,,,0.3391,-0.016,1,,,,,0.5]);
+const badExplodeSfx = new SoundEffect([3,,0.3723,0.5327,0.1716,0.0352,,0.0305,,,,,,,,,0.2013,-0.188,1,,,,,0.5]);
+
 export default class Missile {
   static configureProgram(gl) {
     program = configureProgram(gl);
@@ -56,8 +59,8 @@ export default class Missile {
     this.times = { start: launchTime, explode: explodeTime, end: explodeTime + FADE_TIME };
     this.radius = 0.1;
     this.percentDone = 0;
-    this.goodExplodeSfx = new SoundEffect([3,,0.1265,0.7565,0.4248,0.0688,,0.0011,,,,,,,,,0.3391,-0.016,1,,,,,0.5]);
-    this.badExplodeSfx = new SoundEffect([3,,0.3723,0.5327,0.1716,0.0352,,0.0305,,,,,,,,,0.2013,-0.188,1,,,,,0.5]);
+    this.goodExplodeSfx = goodExplodeSfx;
+    this.badExplodeSfx = badExplodeSfx;
 
     this.modelMatrix = mat4.create();
     const scaleMat = mat4.create();

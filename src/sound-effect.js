@@ -4,6 +4,7 @@ let context = new AudioContext();
 export default class SoundEffect {
   constructor(data, loop = false) {
     this.loop = loop;
+    this.ended = false;
     context.decodeAudioData(jsfxr(data), (buffer) => {
       this.buffer = buffer;
     });
@@ -16,10 +17,11 @@ export default class SoundEffect {
     this.source.buffer = this.buffer;
     this.source.connect(context.destination);
     this.source.start(0);
+    this.source.addEventListener("ended", () => this.ended = true );
   }
 
   stop() {
-    if (!this.source) { return; }
+    if (!this.source || this.ended) { return; }
     this.source.stop();
   }
 }

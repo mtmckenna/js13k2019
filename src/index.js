@@ -17,7 +17,7 @@ import Cube from "./cube";
 import "./index.css";
 
 const game = {};
-const EPSILON = 0.0001;
+const EPSILON = 0.01;
 const canvas = document.createElement("canvas");
 document.body.appendChild(canvas);
 
@@ -57,6 +57,9 @@ const GREEN = [0.2, 0.9, 0.2];
 const BLUE = [0.2, 0.2, 0.9];
 const PURPLE = [0.6, 0.2, 0.8];
 const launchSfx = new SoundEffect([0,,0.2322,,0.1669,0.8257,0.0746,-0.3726,,,,,,0.4334,0.1887,,0.0804,-0.1996,1,,,,,0.5]);
+const HEAT_RATE = .1;
+const COOL_RATE = .002;
+const MIN_HEAT = .1;
 let scenary = [];
 let clickCoords = [];
 let missileDome = null;
@@ -91,6 +94,7 @@ configurePrograms(gl);
 
 const townLocations = [[-gameWidth + 4, 1, 0], [0, 1, 0], [gameWidth - 4, 1, 0]];
 createDomes();
+updateHeatBar();
 
 requestAnimationFrame(update);
 
@@ -147,6 +151,7 @@ function update(time) {
 
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   game.domes = game.domes.filter((dome) => !dome.dead);
+  heat = Math.min(heat + COOL_RATE, 1);
 
   updateDrawables(time)
   checkCollisions(time);
@@ -210,6 +215,7 @@ function draw(time) {
   gl.clearDepth(1.0);                 // Clear everything
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+  updateHeatBar();
   scenary.forEach((drawable) => drawable.draw(time));
   game.drawables.forEach((drawable) => drawable.draw(time));
 }
@@ -251,13 +257,14 @@ function checkCollisions(time) {
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
   if (gameOver) startGame();
-  if (!missileDome || missileDome.dead) return;
+  if (!missileDome || missileDome.dead || heat <= MIN_HEAT) return;
 
   launchSfx.play();
   let touch = event;
   if (event.touches) touch = event.changedTouches[0];
   const worldCoords = unprojectPoint([touch.clientX, touch.clientY]);
   clickCoords.push([worldCoords[0], worldCoords[1], 0]);
+  heat = Math.max(heat - HEAT_RATE, 0);
 }
 
   function unprojectPoint(point) {
@@ -412,6 +419,11 @@ function displayText(text) {
 function hideText(now = true) {
   const time = now ? 0 : 3000;
   setTimeout(() => textBox.style.opacity = 0.0, time);
+}
+
+function updateHeatBar() {
+  const width = Math.max(heat / .98 * 100 - 4, 0);
+  heatBox.style.width = `${width}%`;
 }
 
 // Disable scrolling

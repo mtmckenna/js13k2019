@@ -62,6 +62,7 @@ game.viewProjectionMatrix = viewProjectionMatrix;
 game.inverseViewProjectionMatrix = inverseViewProjectionMatrix;
 game.drawables = [];
 game.scenary = [];
+game.missileDome = null;
 game.clickCoords = [];
 game.timeLastBadMissileFiredAt = 0;
 game.minTimeBetweenBadMissiles = 1000;
@@ -109,6 +110,7 @@ function createDomes() {
   game.drawables.push(dome1);
   game.drawables.push(dome2);
   game.drawables.push(dome3);
+  game.missileDome = dome2;
 }
 
 function updateShake(time) {
@@ -247,9 +249,8 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
-  if (game.gameOver) {
-    startGame();
-  }
+  if (game.gameOver) startGame();
+  if (!game.missileDome || game.missileDome.dead) return;
 
   let touch = event;
   if (event.touches) touch = event.changedTouches[0];

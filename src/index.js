@@ -145,16 +145,15 @@ function update(time) {
   requestAnimationFrame(update);
 
   launchPlayerMissiles(time);
-  if (!gameOver) {
-    launchEnemyMissiles(time);
-  }
+  if (!gameOver) launchEnemyMissiles(time);
 
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   game.domes = game.domes.filter((dome) => !dome.dead);
   heat = Math.min(heat + COOL_RATE, 1);
 
-  updateDrawables(time)
   checkCollisions(time);
+  updateDrawables(time);
+
   scenary.forEach((drawable) => drawable.update(time));
   draw(time);
 }
@@ -177,7 +176,7 @@ function launchEnemyMissiles(time) {
       game.drawables.push(
         new Missile(game,
           time,
-          [launchX, game.bounds.height, 0.0],
+          [launchX, game.bounds.height, missileDome.position[2]],
           townToAimAt,
           false,
           BAD_MISSILE_SPEED * missileSpeedMultiplier
@@ -205,7 +204,7 @@ function updateDrawables(time) {
 
 function launchPlayerMissiles(time) {
   clickCoords.forEach((coords) => game.drawables.push(
-    new Missile(game, time, [0, 3.5, 0], coords, true, GOOD_MISSILE_SPEED * missileSpeedMultiplier)
+    new Missile(game, time, [0, 4.5, missileDome.position[2]], coords, true, GOOD_MISSILE_SPEED * missileSpeedMultiplier)
   ));
   clickCoords = [];
 }
@@ -262,12 +261,12 @@ function fireMissile(event) {
   launchSfx.play();
   let touch = event;
   if (event.touches) touch = event.changedTouches[0];
-  const worldCoords = unprojectPoint([touch.clientX, touch.clientY]);
-  clickCoords.push([worldCoords[0], worldCoords[1], 0]);
+  const worldCoords = unprojectPoint([touch.clientX, touch.clientY], missileDome.position[2]);
+  clickCoords.push([worldCoords[0], worldCoords[1], worldCoords[2]]);
   heat = Math.max(heat - HEAT_RATE, 0);
 }
 
-  function unprojectPoint(point) {
+function unprojectPoint(point, z = 0) {
   const screenX = point[0];
   const screenY = point[1];
   const x = (screenX / canvas.clientWidth) * 2 - 1;
@@ -279,7 +278,7 @@ function fireMissile(event) {
   vec3.transformMat4(worldCoords, coords, inverseViewProjectionMatrix);
   vec3.subtract(worldCoords, worldCoords, cameraPos);
   vec3.normalize(worldCoords, worldCoords);
-  const distance = -cameraPos[2] / worldCoords[2];
+  const distance = (z - cameraPos[2]) / worldCoords[2];
   vec3.scale(worldCoords, worldCoords, distance);
   vec3.add(worldCoords, worldCoords, cameraPos);
   // console.log("screen: ", point);
@@ -329,7 +328,7 @@ function resize() {
   resetMatrices();
 
   // Move 0 on the y-axis to the bottom of the screen
-  const bottomOfWorld = unprojectPoint([width, height], inverseViewProjectionMatrix);
+  const bottomOfWorld = unprojectPoint([width, height]);
   game.bounds.width = Math.abs(bottomOfWorld[0] * 2);
   game.bounds.height = Math.abs(bottomOfWorld[1] * 2);
   const heatBarOffset = game.bounds.height * .04;

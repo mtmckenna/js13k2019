@@ -73,6 +73,7 @@ export default class Missile {
     mat4.rotate(rotMat, this.modelMatrix, this.angle, [0, 0, 1]);
     mat4.multiply(this.modelMatrix, rotMat, scaleMat);
     mat4.multiply(this.modelMatrix, transMat, this.modelMatrix);
+    this.update(launchTime);
   }
 
   update(time) {

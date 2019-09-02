@@ -1,5 +1,6 @@
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 let context = new AudioContext();
+let mute = false;
 
 export default class SoundEffect {
   constructor(data) {
@@ -10,7 +11,7 @@ export default class SoundEffect {
   }
 
   play() {
-    if (!this.buffer) return;
+    if (!this.buffer || mute) return;
     this.source = context.createBufferSource();
     this.source.buffer = this.buffer;
     this.source.connect(context.destination);

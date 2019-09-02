@@ -1,7 +1,6 @@
 //https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
 
 import { mat4, vec3 } from "./lib/gl-matrix";
-import zzfx from "./lib/zzfx";
 import SoundEffect from "./sound-effect";
 import {
   oneOrMinusOne,
@@ -252,8 +251,7 @@ function fireMissile(event) {
   if (game.gameOver) startGame();
   if (!game.missileDome || game.missileDome.dead) return;
 
-  // launchSfx.play();
-  zzfx(1,.1,47,.9,.78,1.3,0,0,.05); // ZzFX 81596
+  launchSfx.play();
   let touch = event;
   if (event.touches) touch = event.changedTouches[0];
   const worldCoords = unprojectPoint([touch.clientX, touch.clientY]);

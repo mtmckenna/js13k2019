@@ -9,6 +9,7 @@ import VERTEX_SHADER from "./shaders/vertex.glsl";
 import MISSILE_TRAIL_FRAGMENT_SHADER from "./shaders/missile-trail-fragment.glsl";
 import { TRAIL, QUAD_UVS, UNIFORM_NAMES } from "./models";
 import Explosion from "./explosion";
+import SoundEffect from "./sound-effect";
 
 const MISSILE_TRAIL_UNIFORM_NAMES = [
   ...UNIFORM_NAMES,
@@ -26,7 +27,6 @@ let positionBuffer = null;
 let uvBuffer = null;
 
 export default class Missile {
-
   static configureProgram(gl) {
     program = configureProgram(gl);
     positionBuffer = gl.createBuffer();
@@ -56,6 +56,8 @@ export default class Missile {
     this.times = { start: launchTime, explode: explodeTime, end: explodeTime + FADE_TIME };
     this.radius = 0.1;
     this.percentDone = 0;
+    this.goodExplodeSfx = new SoundEffect([3,,0.1265,0.7565,0.4248,0.0688,,0.0011,,,,,,,,,0.3391,-0.016,1,,,,,0.5]);
+    this.badExplodeSfx = new SoundEffect([3,,0.3723,0.5327,0.1716,0.0352,,0.0305,,,,,,,,,0.2013,-0.188,1,,,,,0.5]);
 
     this.modelMatrix = mat4.create();
     const scaleMat = mat4.create();
@@ -114,6 +116,11 @@ export default class Missile {
     this.times.end = time + FADE_TIME;
     this.exploded = true;
     this.collidable = false;
+    if (this.good) {
+      this.goodExplodeSfx.play();
+    } else {
+      this.badExplodeSfx.play();
+    }
   }
 }
 

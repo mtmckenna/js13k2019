@@ -42,7 +42,6 @@ export default class Cube {
     this.dimensions = dimensions;
     this.modelMatrix = mat4.create();
     this.normalMatrix = mat4.create();
-    this.tempMatrix = mat4.create();
     this.rotation = 0;
 
     this.update();
@@ -50,17 +49,14 @@ export default class Cube {
 
   update(time) {
     this.rotation += 0.01;
-    const { modelMatrix, normalMatrix, tempMatrix } = this;
+    const { modelMatrix, normalMatrix } = this;
     const { viewMatrix } = this.game;
     const modelViewMatrix = mat4.create();
     mat4.identity(modelMatrix);
-    mat4.identity(tempMatrix);
     mat4.identity(normalMatrix);
-    mat4.translate(tempMatrix, modelMatrix, this.position);
-    // mat4.rotate(tempMatrix, tempMatrix, this.rotation, [1,1,0]);
-    mat4.scale(tempMatrix, tempMatrix, this.dimensions);
+    mat4.translate(modelMatrix, modelMatrix, this.position);
+    mat4.scale(modelMatrix, modelMatrix, this.dimensions);
 
-    mat4.copy(modelMatrix, tempMatrix);
     mat4.multiply(modelViewMatrix, modelMatrix, viewMatrix);
     mat4.invert(normalMatrix, modelViewMatrix);
     mat4.transpose(normalMatrix, normalMatrix);

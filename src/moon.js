@@ -36,7 +36,6 @@ export default class Moon {
     this.collidable = false;
     this.starFloat = star ? 1.0 : 0.0;
     this.modelMatrix = mat4.create();
-    this.tempMatrix = mat4.create();
     this.radius = star ? 0.20 : 1.0;
     this.update(0);
 
@@ -46,13 +45,11 @@ export default class Moon {
   }
 
   update(time) {
-    const { modelMatrix, tempMatrix } = this;
+    const { modelMatrix } = this;
     const scale = this.radius * 2;
     mat4.identity(modelMatrix);
-    mat4.identity(tempMatrix);
-    mat4.translate(tempMatrix, modelMatrix, this.position);
-    mat4.scale(tempMatrix, tempMatrix, [scale, scale, scale]);
-    mat4.copy(modelMatrix, tempMatrix);
+    mat4.translate(modelMatrix, modelMatrix, this.position);
+    mat4.scale(modelMatrix, modelMatrix, [scale, scale, scale]);
   }
 
   draw(time) {

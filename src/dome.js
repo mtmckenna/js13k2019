@@ -61,7 +61,6 @@ export default class Dome {
     this.collidable = true;
     this.modelMatrix = mat4.create();
     this.normalMatrix = mat4.create();
-    this.tempMatrix = mat4.create();
     this.radius = 4.2;
     this.rotation = 0;
     this.hitFloat = 0.0;
@@ -76,18 +75,16 @@ export default class Dome {
   }
 
   update(time) {
-    const { modelMatrix, normalMatrix, tempMatrix } = this;
+    const { modelMatrix, normalMatrix } = this;
     const { viewMatrix } = this.game;
     const scale = this.radius * 2;
     const modelViewMatrix = mat4.create();
     mat4.identity(modelMatrix);
-    mat4.identity(tempMatrix);
     mat4.identity(normalMatrix);
 
-    mat4.translate(tempMatrix, modelMatrix, this.position);
-    mat4.rotate(tempMatrix, tempMatrix, -Math.PI / 2, [1, 0, 0]);
-    mat4.scale(tempMatrix, tempMatrix, [scale, scale, scale]);
-    mat4.copy(modelMatrix, tempMatrix);
+    mat4.translate(modelMatrix, modelMatrix, this.position);
+    mat4.rotate(modelMatrix, modelMatrix, -Math.PI / 2, [1, 0, 0]);
+    mat4.scale(modelMatrix, modelMatrix, [scale, scale, scale]);
     mat4.multiply(modelViewMatrix, modelMatrix, viewMatrix);
     mat4.invert(normalMatrix, modelViewMatrix);
     mat4.transpose(normalMatrix, normalMatrix);

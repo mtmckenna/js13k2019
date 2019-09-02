@@ -41,8 +41,8 @@ const dimensions = [-1, -1];
 const nearPlane = 0.1 + EPSILON;
 const farPlane = 400.0;
 const fov = 15 * Math.PI / 180;
-const viewMatrix = newViewMatrix();
-const projectionMatrix = newProjectionMatrix();
+const viewMatrix = mat4.create();
+const projectionMatrix = mat4.create();
 const viewProjectionMatrix = mat4.create();
 const inverseViewProjectionMatrix = mat4.create();
 const GOOD_MISSILE_SPEED = 0.019;
@@ -76,8 +76,7 @@ game.shakeInfo = {
 }
 game.gameOver = true;
 
-mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
-mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
+resetMatrices();
 
 gl.enable(gl.BLEND);
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -135,7 +134,7 @@ function update(time) {
   updateShake(time);
   const { shakeInfo } = game;
   vec3.add(cameraPos, game.camera.staticPos, shakeInfo.pos);
-  updateViewProjection();
+  resetMatrices();
   requestAnimationFrame(update);
 
 
@@ -291,17 +290,11 @@ function startGame() {
 function resetCamera() {
   vec3.set(cameraPos, 0, 0, 1);
   vec3.set(lookAtPos, 0, 0, -1);
-  updateViewProjection();
+  resetMatrices();
   // gl.enable(gl.CULL_FACE);
   // gl.cullFace(gl.BACK);
 }
 
-function updateViewProjection() {
-  mat4.copy(projectionMatrix, newProjectionMatrix());
-  mat4.copy(viewMatrix, newViewMatrix());
-  mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
-  mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
-}
 
 function resize() {
   const height = window.innerHeight;
@@ -328,7 +321,7 @@ function resize() {
   const z = Math.min(gameWidth / bounds[0], farPlane);
   vec3.set(cameraPos, 0, 0, z);
   vec3.set(lookAtPos, 0, 0, -1);
-  updateViewProjection();
+  resetMatrices();
 
   // Move 0 on the y-axis to the bottom of the screen
   const bottomOfWorld = unprojectPoint([width, height], inverseViewProjectionMatrix);
@@ -337,7 +330,7 @@ function resize() {
   vec3.set(cameraPos, 0, -bottomOfWorld[1], z);
   vec3.copy(game.camera.staticPos, cameraPos);
   vec3.set(lookAtPos, 0, -bottomOfWorld[1], -1);
-  updateViewProjection();
+  resetMatrices();
 
   // Reset scenary
   game.scenary = [];
@@ -363,10 +356,7 @@ function resize() {
   const topRightOfWorld = unprojectPoint([width * .9, height * .1]);
   vec3.set(moon.position, topRightOfWorld[0], topRightOfWorld[1], 0);;
 
-  mat4.copy(projectionMatrix, newProjectionMatrix());
-  mat4.copy(viewMatrix, newViewMatrix());
-  mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
-  mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
+  resetMatrices();
 
   // Make bad missiles faster the game screen is taller
   game.missileSpeedMultiplier = Math.abs(game.bounds.height / 25);
@@ -390,17 +380,23 @@ function resize() {
   game.scenary.push(mountains3);
 }
 
-function newViewMatrix() {
-  let matrix = mat4.create();
-  mat4.lookAt(matrix, cameraPos, lookAtPos, [0.0, 1.0, 0.0]);
-  return matrix;
+function resetMatrices() {
+  resetProjectionMatrix();
+  resetViewMatrix();
+  mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
+  mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
+
 }
 
-function newProjectionMatrix() {
-  let matrix = mat4.create();
+function resetViewMatrix() {
+  mat4.identity(viewMatrix);
+  mat4.lookAt(viewMatrix, cameraPos, lookAtPos, [0.0, 1.0, 0.0]);
+}
+
+function resetProjectionMatrix() {
+  mat4.identity(projectionMatrix);
   const aspectRatio = canvas.clientWidth / canvas.clientHeight;
-  mat4.perspective(matrix, fov, aspectRatio, nearPlane, farPlane);
-  return matrix;
+  mat4.perspective(projectionMatrix, fov, aspectRatio, nearPlane, farPlane);
 }
 
 function configurePrograms(gl) {

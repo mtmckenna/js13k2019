@@ -3,7 +3,6 @@ import {
   configureBuffer,
   programFromCompiledShadersAndUniformNames,
   setPosition,
-  setUvs,
   randomFloatBetween,
 } from "./webgl-helpers";
 
@@ -21,7 +20,6 @@ const DOME_UNIFORM_NAMES = [
 let program = null;
 let normalBuffer = null;
 let positionBuffer = null;
-let uvBuffer = null;
 
 const MIN_WIDTH = 3.2;
 const MAX_WIDTH = 5.8;
@@ -32,7 +30,6 @@ export default class Mountains {
     program = configureProgram(gl);
     normalBuffer = gl.createBuffer();
     positionBuffer = gl.createBuffer();
-    uvBuffer = gl.createBuffer();
   }
 
   constructor(game, position, dimensions, color) {
@@ -68,7 +65,6 @@ export default class Mountains {
     gl.useProgram(program);
     setPosition(gl, program, positionBuffer, vertexData);
     configureBuffer(gl, program, normalBuffer, normalData, 3, "aNormal");
-    // setUvs(gl, program, uvBuffer, uvData);
 
     gl.uniform1f(program.uniformsCache["uTime"], time);
     gl.uniform3f(program.uniformsCache["uLightPosition"], .3, 0, -0.9);
@@ -83,7 +79,6 @@ export default class Mountains {
 
   configureVertices() {
     this.vertexData = [];
-    this.uvData = [];
     this.indexData = [];
     this.normalData = [];
 
@@ -133,18 +128,7 @@ export default class Mountains {
       distance += width * randomFloatBetween(0.7, 1.8);
     }
 
-    this.uvData = [
-      0.0,  0.0,
-      1.0,  0.0,
-      0.5,  1.0,
-      0.0,  0.0,
-
-      1.0,  0.0,
-      0.5,  1.0,
-    ]
-
     this.vertexData = new Float32Array(this.vertexData);
-    this.uvData = new Float32Array(this.uvData);
     this.normalData = new Float32Array(this.normalData);
   }
 }

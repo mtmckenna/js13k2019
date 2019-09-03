@@ -22,6 +22,6 @@ void main() {
   color = vLightIntensity + color;
   color.r = color.r + (1.0 - uHealth);
 
-  gl_FragColor = vec4(color, min(uAlpha, 0.75));
+  gl_FragColor = vec4(color, min(uAlpha, 0.35));
 }
 

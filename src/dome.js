@@ -64,6 +64,7 @@ export default class Dome {
     this.radius = 4.2;
     this.rotation = 0;
     this.hitFloat = 0.0;
+    this.buildings = [];
     this.exploded = false;
     this.times = { hit: 0, exploded: 0, death: 0 };
     this.alpha = 1;
@@ -137,15 +138,17 @@ export default class Dome {
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
-    gl.uniform4fv(program.uniformsCache["uLightPosition"], [0, 50, 0, 1.0]);
+    gl.uniform4fv(program.uniformsCache["uLightPosition"], [50, 200, -100, 1.0]);
 
     gl.uniform3fv(program.uniformsCache["uKd"], this.color);
     gl.uniform3fv(program.uniformsCache["uLd"], [1.0, 1.0, 1.0]);
 
     gl.frontFace(gl.CW);
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
     gl.drawElements(gl.TRIANGLES, indexData.length, gl.UNSIGNED_SHORT, 0);
+    gl.disable(gl.CULL_FACE)
     gl.frontFace(gl.CCW);
-
   }
 
   hit(time) {

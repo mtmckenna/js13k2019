@@ -62,9 +62,9 @@ const MIN_HEAT = .1;
 const launchSfx = new SoundEffect([0,,0.2322,,0.1669,0.8257,0.0746,-0.3726,,,,,,0.4334,0.1887,,0.0804,-0.1996,1,,,,,0.5]);
 const bounds = { width: -1, height: -1 };
 let scenary = [];
+let domes = [];
 let clickCoords = [];
 let missileDome = null;
-let missileSpeedMultiplier = 1.0;
 let heat = 1.0;
 let gameOver = true;
 let wave = 1;
@@ -98,7 +98,7 @@ gl.depthFunc(gl.LESS);
 // gl.cullFace(gl.BACK);
 configurePrograms(gl);
 
-const townLocations = [[-gameWidth + 4, 1, 0], [0, 1, 0], [gameWidth - 4, 1, 0]];
+const townLocations = [[-gameWidth + 4, 0, 0], [0, 0, 0], [gameWidth - 4, 0, 0]];
 createDomes();
 updateHeatBar();
 
@@ -141,10 +141,11 @@ function createDomes() {
   const dome1 = new Dome(game, [townLocations[0][0], townLocations[0][1], townLocations[0][2] - 2], PURPLE);
   const dome2 = new Dome(game, [townLocations[1][0], townLocations[1][1], townLocations[1][2] - 2], GREEN);
   const dome3 = new Dome(game, [townLocations[2][0], townLocations[2][1], townLocations[2][2] - 2], BLUE);
-  game.domes = [dome1, dome2, dome3];
+  domes = [dome1, dome2, dome3];
   game.drawables.push(dome1);
   game.drawables.push(dome2);
   game.drawables.push(dome3);
+
   missileDome = dome2;
 }
 
@@ -166,7 +167,7 @@ function updateShake(time) {
 }
 
 function update(time) {
-  if (game.domes.length <= 0) endGame();
+  if (domes.length <= 0) endGame();
   resize();
   updateShake(time);
   const { shakeInfo } = game;
@@ -179,7 +180,7 @@ function update(time) {
 
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   waveNumBadMissilesRemaining = game.drawables.filter(d => d.type === "missile" && !d.good);
-  game.domes = game.domes.filter((dome) => !dome.dead);
+  domes = domes.filter((dome) => !dome.dead);
   heat = Math.min(heat + COOL_RATE, 1);
 
   checkCollisions(time);
@@ -212,7 +213,7 @@ function launchEnemyMissiles(time) {
       const halfWidth = bounds.width / 2;
       const launchX = randomFloatBetween(-halfWidth, halfWidth);
       const townToAimAt = vec3.create();
-      vec3.copy(townToAimAt, game.domes[randomIntBetween(0, game.domes.length - 1)].position);
+      vec3.copy(townToAimAt, domes[randomIntBetween(0, domes.length - 1)].position);
       const jitter = randomFloatBetween(-0.1, 0.1);
       townToAimAt[0] += jitter;
 
@@ -247,7 +248,7 @@ function updateDrawables(time) {
 
 function launchPlayerMissiles(time) {
   clickCoords.forEach((coords) => game.drawables.push(
-    new Missile(game, time, [0, 4.5, missileDome.position[2]], coords, true, GOOD_MISSILE_SPEED * missileSpeedMultiplier)
+    new Missile(game, time, [0, 4.5, missileDome.position[2]], coords, true, GOOD_MISSILE_SPEED)
   ));
   clickCoords = [];
 }
@@ -390,7 +391,7 @@ function resize() {
   const bottomOfWorld = unprojectPoint([width, height]);
   bounds.width = Math.abs(bottomOfWorld[0] * 2);
   bounds.height = Math.abs(bottomOfWorld[1] * 2);
-  const heatBarOffset = bounds.height * .04;
+  const heatBarOffset = bounds.height * .04 + 1;
   const y = -bottomOfWorld[1] - heatBarOffset;
   vec3.set(cameraPos, 0, y, z);
   vec3.copy(game.camera.staticPos, cameraPos);
@@ -421,9 +422,6 @@ function resize() {
   const topRightOfWorld = unprojectPoint([width * .9, height * .1]);
   vec3.set(moon.position, topRightOfWorld[0], topRightOfWorld[1], 0);;
 
-  // Make bad missiles faster the game screen is taller
-  missileSpeedMultiplier = 1.0;
-
   // Reset ground
   const groundDepth = 50;
   const ground = new Cube(game, [0, -2, -groundDepth], [bounds.width * 2, 1, groundDepth]);
@@ -440,6 +438,28 @@ function resize() {
   scenary.push(mountains1);
   scenary.push(mountains2);
   scenary.push(mountains3);
+
+  // Add buildings
+  domes.forEach((dome) => {
+    dome.buildings = [];
+    let distance = 0;
+    const x = dome.position[0] - dome.radius + dome.radius * .2;
+    const z = dome.position[2]
+    const width = .5;
+    const maxDistance = dome.radius * 2 - 5 * width;
+    while (distance < maxDistance) {
+      distance += randomFloatBetween(.5, 1);
+      const height = randomFloatBetween(0.5, 1.4);
+      const building = new Cube(game, [x + distance, height, z], [width, height, width], true);
+      scenary.push(building);
+      dome.buildings.push(building);
+    }
+
+    dome.buildings[0].dimensions[1] = 0.7;
+    dome.buildings[0].position[1] = 0.7;
+    dome.buildings[dome.buildings.length - 1].dimensions[1] = 0.6;
+    dome.buildings[dome.buildings.length - 1].position[1] = 0.6;
+  });
 }
 
 function resetMatrices() {

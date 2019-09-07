@@ -1,7 +1,7 @@
 import { mat4, vec3 } from "./lib/gl-matrix";
 import {
-  configureBuffer,
   programFromCompiledShadersAndUniformNames,
+  setNormal,
   setPosition,
   randomFloatBetween,
 } from "./webgl-helpers";
@@ -64,7 +64,7 @@ export default class Mountains {
     const { viewMatrix, projectionMatrix } = this.game;
     gl.useProgram(program);
     setPosition(gl, program, positionBuffer, vertexData);
-    configureBuffer(gl, program, normalBuffer, normalData, 3, "aNormal");
+    setNormal(gl, program, normalBuffer, normalData);
 
     gl.uniform1f(program.uniformsCache["uTime"], time);
     gl.uniform3f(program.uniformsCache["uLightPosition"], .3, 0, -0.9);

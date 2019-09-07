@@ -21,6 +21,10 @@ function cacheUniformLocations(gl, program, uniformNames) {
   });
 }
 
+export function setNormal(gl, program, buffer, vertices) {
+  configureBuffer(gl, program, buffer, vertices, 3, "aNormal");
+}
+
 export function setPosition(gl, program, buffer, vertices) {
   configureBuffer(gl, program, buffer, vertices, 3, "aPosition");
 }

@@ -3,6 +3,7 @@ import {
   configureBuffer,
   randomFloatBetween,
   programFromCompiledShadersAndUniformNames,
+  setNormal,
   setPosition,
   setUvs,
 } from "./webgl-helpers";
@@ -124,7 +125,7 @@ export default class Dome {
 
 
     gl.useProgram(program);
-    configureBuffer(gl, program, normalBuffer, normalData, 3, "aNormal");
+    setNormal(gl, program, normalBuffer, normalData);
     setPosition(gl, program, positionBuffer, vertexPositionData);
     setUvs(gl, program, uvBuffer, this.textureCoordData);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);

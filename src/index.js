@@ -445,9 +445,11 @@ function resize() {
     let distance = 0;
     const x = dome.position[0] - dome.radius + dome.radius * .2;
     const z = dome.position[2]
-    const width = .5;
+    const width = 0.5;
     const maxDistance = dome.radius * 2 - 5 * width;
+    let count = 0;
     while (distance < maxDistance) {
+        count++;
       distance += randomFloatBetween(.5, 1);
       const height = randomFloatBetween(0.5, 1.4);
       const building = new Cube(game, [x + distance, height, z], [width, height, width], true);

@@ -4,6 +4,7 @@ import {
   programFromCompiledShadersAndUniformNames,
   setPosition,
   setUvs,
+  setNormal,
   randomFloatBetween,
 } from "./webgl-helpers";
 
@@ -19,6 +20,7 @@ const CUBE_UNIFORM_NAMES = [
   "uColor",
   "uLightPosition",
   "uLightColor",
+  "uDimensions",
 ];
 
 let programGround = null;
@@ -74,14 +76,14 @@ export default class Cube {
     const { viewMatrix, projectionMatrix } = this.game;
     gl.useProgram(program);
 
-    configureBuffer(gl, program, normalBuffer, CUBE_NORMALS, 3, "aNormal");
-
+    setNormal(gl, program, normalBuffer, CUBE_NORMALS);
     setPosition(gl, program, positionBuffer, CUBE);
     setUvs(gl, program, uvBuffer, CUBE_UVS);
 
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, CUBE_INDICES, gl.STATIC_DRAW);
 
+    gl.uniform3f(program.uniformsCache["uDimensions"], ...this.dimensions);
     gl.uniform3f(program.uniformsCache["uLightPosition"], .25, 1, 0);
     gl.uniform3f(program.uniformsCache["uLightColor"], 1.0, 1.0, 1.0);
     gl.uniform3f(program.uniformsCache["uColor"], ...this.color);

@@ -56,8 +56,6 @@ export default class Dome {
     this.position = position;
     this.originalPosition = vec3.create();
     vec3.set(this.originalPosition, position[0], position[1], position[2]);
-    this.dead = false;
-    this.health = 1;
     this.color = color;
     this.collidable = true;
     this.modelMatrix = mat4.create();
@@ -66,14 +64,22 @@ export default class Dome {
     this.rotation = 0;
     this.hitFloat = 0.0;
     this.buildings = [];
-    this.exploded = false;
-    this.times = { hit: 0, exploded: 0, death: 0 };
-    this.alpha = 1;
     this.explodeSfx = new SoundEffect([3,0.14,0.79,0.22,0.81,0.2472,,-0.0503,,,0.26,,,,,0.5637,,,1,,,,,0.5]);
     this.hitSfx = new SoundEffect([0,,0.1251,,0.1622,0.12,,,,,,,,0.1687,,,,,1,,,0.1,,0.5]);
 
+    this.reset();
     this.initVertexBuffers();
     this.update();
+  }
+
+  reset() {
+    this.hitFloat = 0.0;
+    this.times = { hit: 0, exploded: 0, death: 0 };
+    this.alpha = 1;
+    this.dead = false;
+    this.exploded = false;
+    this.health = 1;
+    this.buildings.forEach(building => building.dead = false);
   }
 
   update(time) {
@@ -114,6 +120,7 @@ export default class Dome {
       this.alpha = Math.max(1.0 - (time - this.times.exploded) / DEATH_FADE_TIME, 0.0);
       if (this.alpha <= 0) {
         this.dead = true;
+        this.buildings.forEach(building => building.dead = true);
       }
     }
   }

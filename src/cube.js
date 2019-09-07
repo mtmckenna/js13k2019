@@ -1,6 +1,5 @@
 import { mat4 } from "./lib/gl-matrix";
 import {
-  configureBuffer,
   programFromCompiledShadersAndUniformNames,
   setPosition,
   setUvs,
@@ -21,6 +20,7 @@ const CUBE_UNIFORM_NAMES = [
   "uLightPosition",
   "uLightColor",
   "uDimensions",
+  "uDead",
 ];
 
 let programGround = null;
@@ -46,6 +46,7 @@ export default class Cube {
     this.gl = this.game.gl;
     this.position = position;
     this.dimensions = dimensions;
+    this.dead = false;
     this.modelMatrix = mat4.create();
     this.normalMatrix = mat4.create();
     this.rotation = building ? randomFloatBetween(-Math.PI, Math.PI) : 0;
@@ -57,7 +58,6 @@ export default class Cube {
   }
 
   update(time) {
-    // this.rotation += 0.01;
     const { modelMatrix, normalMatrix } = this;
     const { viewMatrix } = this.game;
     const modelViewMatrix = mat4.create();
@@ -83,6 +83,7 @@ export default class Cube {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, CUBE_INDICES, gl.STATIC_DRAW);
 
+    gl.uniform1f(program.uniformsCache["uDead"], this.dead ? 1.0 : 0.0);
     gl.uniform3f(program.uniformsCache["uDimensions"], ...this.dimensions);
     gl.uniform3f(program.uniformsCache["uLightPosition"], .25, 1, 0);
     gl.uniform3f(program.uniformsCache["uLightColor"], 1.0, 1.0, 1.0);

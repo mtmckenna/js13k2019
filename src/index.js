@@ -167,7 +167,7 @@ function updateShake(time) {
 }
 
 function update(time) {
-  if (domes.length <= 0) endGame();
+  if (domes.every(dome => dome.dead)) endGame();
   resize();
   updateShake(time);
   const { shakeInfo } = game;
@@ -180,7 +180,6 @@ function update(time) {
 
   game.drawables = game.drawables.filter((drawable) => !drawable.dead);
   waveNumBadMissilesRemaining = game.drawables.filter(d => d.type === "missile" && !d.good);
-  domes = domes.filter((dome) => !dome.dead);
   heat = Math.min(heat + COOL_RATE, 1);
 
   checkCollisions(time);
@@ -210,24 +209,27 @@ function launchEnemyMissiles(time) {
   const timeInWave = time - waveStartTime;
   const nextTime = waveMissileTimes[waveMissileTimes.length - 1];
   if (nextTime < timeInWave) {
-      const halfWidth = bounds.width / 2;
-      const launchX = randomFloatBetween(-halfWidth, halfWidth);
-      const townToAimAt = vec3.create();
-      vec3.copy(townToAimAt, domes[randomIntBetween(0, domes.length - 1)].position);
-      const jitter = randomFloatBetween(-0.1, 0.1);
-      townToAimAt[0] += jitter;
+    const targetableDomes = domes.filter((dome) => !dome.dead);
+    const domeIndex = randomIntBetween(0, targetableDomes.length - 1);
+    const targetDome = targetableDomes[domeIndex];
+    const halfWidth = bounds.width / 2;
+    const launchX = randomFloatBetween(-halfWidth, halfWidth);
+    const townToAimAt = vec3.create();
+    vec3.copy(townToAimAt, targetDome.position);
+    const jitter = randomFloatBetween(-0.1, 0.1);
+    townToAimAt[0] += jitter;
 
-      game.drawables.push(
-        new Missile(
-          game,
-          time,
-          [launchX, bounds.height, missileDome.position[2]],
-          townToAimAt,
-          false,
-          waveBadMissileSpeed
-        )
-      );
-      waveMissileTimes.pop();
+    game.drawables.push(
+      new Missile(
+        game,
+        time,
+        [launchX, bounds.height, missileDome.position[2]],
+        townToAimAt,
+        false,
+        waveBadMissileSpeed
+      )
+    );
+    waveMissileTimes.pop();
   }
 }
 
@@ -333,7 +335,7 @@ function unprojectPoint(point, z = 0) {
 
 function startGame() {
   gameOver = false;
-  game.drawables = [];
+  game.drawables = [...domes];
   wave = 1;
   waveStartTime = null;
   waveOn = false;
@@ -342,7 +344,7 @@ function startGame() {
   waveMissileTimes = [];
   waveBadMissileSpeed = BAD_MISSILE_SPEED;
   waveNumBadMissilesRemaining = null;
-  createDomes();
+  domes.forEach(dome => dome.reset());
   hideText(1000);
   displayWaveNum(3100);
   generateWave();
@@ -447,9 +449,7 @@ function resize() {
     const z = dome.position[2]
     const width = 0.5;
     const maxDistance = dome.radius * 2 - 5 * width;
-    let count = 0;
     while (distance < maxDistance) {
-        count++;
       distance += randomFloatBetween(.5, 1);
       const height = randomFloatBetween(0.5, 1.4);
       const building = new Cube(game, [x + distance, height, z], [width, height, width], true);

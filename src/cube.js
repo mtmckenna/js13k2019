@@ -52,7 +52,7 @@ export default class Cube {
     this.rotation = building ? randomFloatBetween(-Math.PI, Math.PI) : 0;
     this.building = building;
     this.program = building ? programBuilding : programGround;
-    this.color = building ? [.7, .7, .7] : [0.47, 0.74, 0.54];
+    this.color = building ? [.7, .7, .7] : [0.27, 0.54, 0.34];
 
     this.update();
   }
@@ -76,7 +76,7 @@ export default class Cube {
     const { viewMatrix, projectionMatrix } = this.game;
     gl.useProgram(program);
 
-    setNormal(gl, program, normalBuffer, CUBE_NORMALS);
+    if (this.building) setNormal(gl, program, normalBuffer, CUBE_NORMALS);
     setPosition(gl, program, positionBuffer, CUBE);
     setUvs(gl, program, uvBuffer, CUBE_UVS);
 

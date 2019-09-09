@@ -424,22 +424,23 @@ function resize() {
   const topRightOfWorld = unprojectPoint([width * .9, height * .1]);
   vec3.set(moon.position, topRightOfWorld[0], topRightOfWorld[1], 0);;
 
-  // Reset ground
-  const groundDepth = 50;
-  const ground = new Cube(game, [0, -2, -groundDepth], [bounds.width * 2, 1, groundDepth]);
-  scenary.push(ground);
-
   // Reset mountains
-  const mountainHeight = (bounds.height - mountainY) * .60;
+  const mountainHeight = (bounds.height - mountainY) * .66;
   const mountainStart = -bounds.width / 2 - bounds.width * .25;
   const mountainEnd = bounds.width + bounds.width * .25;
+  const mountainZ = 20;
 
-  const mountains1 = new Mountains(game, [mountainStart, mountainY, 0], [mountainEnd, mountainHeight * 1.0, 0], [0.0, 0.3, 0.5]);
-  const mountains2 = new Mountains(game, [mountainStart, mountainY, 1], [mountainEnd, mountainHeight * 0.7, 0], [0.0, 0.5, 0.5]);
-  const mountains3 = new Mountains(game, [mountainStart, mountainY, 2], [mountainEnd, mountainHeight * 0.3, 0], [0.0, 0.4, 0.5]);
+  const mountains1 = new Mountains(game, [mountainStart, 0, -mountainZ + 0], [mountainEnd, mountainHeight * 1.0, 0], [0.0, 0.3, 0.5]);
+  const mountains2 = new Mountains(game, [mountainStart, 0, -mountainZ + 1], [mountainEnd, mountainHeight * 0.7, 0], [0.0, 0.5, 0.5]);
+  const mountains3 = new Mountains(game, [mountainStart, 0, -mountainZ + 2], [mountainEnd, mountainHeight * 0.3, 0], [0.0, 0.4, 0.5]);
   scenary.push(mountains1);
   scenary.push(mountains2);
   scenary.push(mountains3);
+
+  // Reset ground
+  const groundDepth = mountainZ;
+  const ground = new Cube(game, [0, -1, 0], [2 * bounds.width, 1, groundDepth]);
+  scenary.push(ground);
 
   // Add buildings
   domes.forEach((dome) => {
@@ -447,7 +448,7 @@ function resize() {
     let distance = 0;
     const x = dome.position[0] - dome.radius + dome.radius * .2;
     const z = dome.position[2]
-    const width = 0.5;
+    const width = .5;
     const maxDistance = dome.radius * 2 - 5 * width;
     while (distance < maxDistance) {
       distance += randomFloatBetween(.5, 1);

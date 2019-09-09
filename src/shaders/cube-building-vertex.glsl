@@ -9,6 +9,7 @@ uniform mat4 projectionMatrix;
 uniform vec3 uLightPosition;
 uniform vec3 uLightColor;
 
+varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec2 vUvs;
 varying vec4 vWorldPos;
@@ -23,6 +24,7 @@ void main() {
   vLighting = uLightColor * light + .2;
   vPosition = aPosition;
   vUvs = aUvs;
+  vNormal = aNormal;
 
   gl_Position = projectionMatrix * viewMatrix * vWorldPos;
 }

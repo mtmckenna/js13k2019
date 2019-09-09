@@ -5,11 +5,13 @@ uniform vec3 uColor;
 uniform vec3 uLightPosition;
 varying vec3 vLighting;
 varying vec2 vUvs;
+varying vec3 vNormal;
 
 void main() {
     vec3 windowColor = vec3(.7, .7, 0.0);
     vec3 wallColor = vec3(.1, .1, .1);
 
+    float isSide = max(1.0 - vNormal.y, 0.0);
     float gutter = 0.05;
     vec2 windows = vec2(4.0, 4.0) * (1.0 - uDead);
 
@@ -19,7 +21,7 @@ void main() {
 
     float trX = step(gutter, mod((1.0 - vUvs.x), 1.0 / windows.x));
     float trY = step(gutter, mod((1.0 - vUvs.y), 1.0 / windows.y));
-	  pct *= trX * trY;
+	  pct *= trX * trY * isSide;
 
     float inversePct = 1.0 - pct;
     vec3 color = (vec3(pct * windowColor + inversePct * wallColor) + .2);

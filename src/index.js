@@ -62,6 +62,7 @@ const MIN_HEAT = .1;
 const launchSfx = new SoundEffect([0,,0.2322,,0.1669,0.8257,0.0746,-0.3726,,,,,,0.4334,0.1887,,0.0804,-0.1996,1,,,,,0.5]);
 const bounds = { width: -1, height: -1 };
 let scenary = [];
+let thingsToFadeOut = [];
 let domes = [];
 let clickCoords = [];
 let missileDome = null;
@@ -194,6 +195,11 @@ function update(time) {
   }
 
   scenary.forEach((drawable) => drawable.update(time));
+  thingsToFadeOut.forEach((thing) => {
+    thing.alpha -= 0.01;
+    thing.update(time);
+  });
+  thingsToFadeOut = thingsToFadeOut.filter((thing) => thing.alpha > 0.0);
   draw(time);
 }
 
@@ -263,6 +269,7 @@ function draw(time) {
   updateHeatBar();
   scenary.forEach((drawable) => drawable.draw(time));
   game.drawables.forEach((drawable) => drawable.draw(time));
+  thingsToFadeOut.forEach((thing) => thing.draw(time));
 }
 
 // TODO: Consider space partioning to make this faster
@@ -335,6 +342,8 @@ function unprojectPoint(point, z = 0) {
 
 function startGame() {
   gameOver = false;
+  thingsToFadeOut = game.drawables.filter((drawable) => drawable.type === "missile");
+  console.log("START", thingsToFadeOut)
   game.drawables = [...domes];
   wave = 1;
   waveStartTime = null;

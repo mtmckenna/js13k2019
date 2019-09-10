@@ -18,6 +18,7 @@ const MISSILE_TRAIL_UNIFORM_NAMES = [
   "uStartTime",
   "uGood",
   "uPercentDone",
+  "uAlpha",
 ];
 
 const FADE_TIME = 2000;
@@ -52,6 +53,7 @@ export default class Missile {
     vec3.copy(this.position, position);
     vec3.copy(this.destination, destination);
     const destFromOrigin = vec3.create();
+    this.alpha = 1;
     vec3.subtract(destFromOrigin, this.destination, this.position);
     const xDirection = this.destination[0] - this.position[0];
     this.angle = vec3.angle([0, 1, 0], destFromOrigin) * -Math.sign(xDirection);
@@ -99,6 +101,7 @@ export default class Missile {
     gl.uniform1f(program.uniformsCache["uStartTime"], this.times.start);
     gl.uniform1f(program.uniformsCache["uEndTime"], this.times.end);
     gl.uniform1f(program.uniformsCache["uPercentDone"], this.percentDone);
+    gl.uniform1f(program.uniformsCache["uAlpha"], this.alpha);
     gl.drawArrays(gl.TRIANGLES, 0, TRAIL.length / 3);
   }
 

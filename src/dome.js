@@ -132,7 +132,6 @@ export default class Dome {
     const { normalData, indexData, vertexPositionData } = this;
     const { viewMatrix, projectionMatrix } = this.game;
 
-
     gl.useProgram(program);
     setNormal(gl, program, normalBuffer, normalData);
     setPosition(gl, program, positionBuffer, vertexPositionData);

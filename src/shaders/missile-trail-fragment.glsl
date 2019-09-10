@@ -7,6 +7,7 @@ uniform float uEndTime;
 uniform float uExplodeTime;
 uniform float uGood;
 uniform float uPercentDone;
+uniform float uAlpha;
 
 varying vec2 vUvs;
 
@@ -19,6 +20,6 @@ void main() {
   float r = 1.0 - uGood;
   float g = uGood;
 
-  gl_FragColor = vec4(r, g, 0.2, 1.0) * alpha;
+  gl_FragColor = vec4(r, g, 0.2, 1.0) * alpha * uAlpha;
 }
 

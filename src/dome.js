@@ -1,6 +1,5 @@
 import { mat4, vec3 } from "./lib/gl-matrix";
 import {
-  configureBuffer,
   randomFloatBetween,
   programFromCompiledShadersAndUniformNames,
   setNormal,

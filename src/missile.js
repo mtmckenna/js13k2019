@@ -107,7 +107,6 @@ export default class Missile {
     gl.uniform1f(program.uniformsCache["uPercentDone"], this.percentDone);
     gl.uniform1f(program.uniformsCache["uAlpha"], this.alpha);
     gl.drawArrays(gl.TRIANGLES, 0, TRAIL.length / 3);
-    gl.disable(gl.DEPTH_TEST);
   }
 
   maybeExplode(time) {

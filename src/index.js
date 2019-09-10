@@ -61,6 +61,7 @@ const HEAT_RATE = .2;
 const COOL_RATE = .002;
 const MIN_HEAT = .1;
 const launchSfx = new SoundEffect([0,,0.2322,,0.1669,0.8257,0.0746,-0.3726,,,,,,0.4334,0.1887,,0.0804,-0.1996,1,,,,,0.5]);
+const badLaunchSfx = new SoundEffect([3,,0.1796,0.2371,0.4295,0.2341,,0.1075,,,,-0.4805,0.8129,,,,,,1,,,,,0.5]);
 const bounds = { width: -1, height: -1 };
 let scenary = [];
 let thingsToFadeOut = [];
@@ -190,27 +191,31 @@ function update(time) {
   if (waveNumBadMissilesRemaining <= 0 && waveMissileTimes.length === 0 && waveOn) {
     stopWave();
     wave++;
-    generateWave(time);
+    generateWave();
     displayWaveNum(3000);
     setTimeout(() => startWave(), 2000);
     const z = -30;
     const numMissiles = waveMissileTimes.length;
+    const delay = 2000 / numMissiles;
     const launchWidth = bounds.width / 2;
     const launchStartX = - launchWidth / 2;
 
     for (let i = 0; i < numMissiles; i++) {
-      const x = launchStartX + (launchWidth / (numMissiles - 1)) * i;
-      const missile = new Missile(
-        game,
-        time,
-        [x, 0, z],
-        [x, bounds.height * 5.0, z],
-        false,
-        BG_MISSILE_SPEED,
-        true
-      );
-
-      thingsToFadeOut.unshift(missile);
+      const launchTime = delay * i;
+      setTimeout(() => {
+        const x = launchStartX + (launchWidth / (numMissiles - 1)) * i;
+        const missile = new Missile(
+          game,
+          time + launchTime,
+          [x, 0, z],
+          [x, bounds.height * 5.0, z],
+          false,
+          BG_MISSILE_SPEED,
+          true
+        );
+        thingsToFadeOut.push(missile);
+        badLaunchSfx.play();
+      }, launchTime);
     }
   }
 
@@ -279,8 +284,7 @@ function launchPlayerMissiles(time) {
 }
 
 function draw(time) {
-  // gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
-  gl.clearDepth(1.0);                 // Clear everything
+  gl.clearDepth(1.0);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   updateHeatBar();
@@ -325,7 +329,10 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
-  if (gameOver) startGame();
+  if (gameOver) {
+    setTimeout(startGame, 1500);
+  };
+
   if (!missileDome || missileDome.dead || heat <= MIN_HEAT) return;
 
   launchSfx.play();
@@ -434,7 +441,7 @@ function resize() {
   for (let i = 0; i < numStars; i++) {
     const x = randomFloatBetween(-bounds.width, bounds.width);
     const y = randomFloatBetween(mountainY, bounds.height);
-    const z = randomFloatBetween(-2, -40);
+    const z = randomFloatBetween(-50, -80);
     const star = new Moon(game, [x, y, z], true);
     scenary.push(star);
   }

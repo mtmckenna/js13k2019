@@ -51,6 +51,7 @@ const viewProjectionMatrix = mat4.create();
 const inverseViewProjectionMatrix = mat4.create();
 const GOOD_MISSILE_SPEED = 0.02;
 const BAD_MISSILE_SPEED  = 0.0020;
+const BG_MISSILE_SPEED = 0.025;
 const GOOD_MISSILE_SHAKE_AMOUNT = 0.5;
 const BAD_MISSILE_SHAKE_AMOUNT = 3.0;
 const GREEN = [0.2, 0.9, 0.2];
@@ -68,7 +69,7 @@ let clickCoords = [];
 let missileDome = null;
 let heat = 1.0;
 let gameOver = true;
-let wave = 1;
+let wave = 0;
 let waveStartTime = null;
 let waveOn = false;
 let waveDuration = 5000;
@@ -189,16 +190,32 @@ function update(time) {
   if (waveNumBadMissilesRemaining <= 0 && waveMissileTimes.length === 0 && waveOn) {
     stopWave();
     wave++;
-    generateWave();
-    displayWaveNum(1500);
+    generateWave(time);
+    displayWaveNum(3000);
     setTimeout(() => startWave(), 2000);
+    const z = -30;
+    const numMissiles = waveMissileTimes.length;
+    const launchWidth = bounds.width / 2;
+    const launchStartX = - launchWidth / 2;
+
+    for (let i = 0; i < numMissiles; i++) {
+      const x = launchStartX + (launchWidth / (numMissiles - 1)) * i;
+      const missile = new Missile(
+        game,
+        time,
+        [x, 0, z],
+        [x, bounds.height * 5.0, z],
+        false,
+        BG_MISSILE_SPEED,
+        true
+      );
+
+      thingsToFadeOut.unshift(missile);
+    }
   }
 
   scenary.forEach((drawable) => drawable.update(time));
-  thingsToFadeOut.forEach((thing) => {
-    thing.alpha -= 0.01;
-    thing.update(time);
-  });
+  thingsToFadeOut.forEach((thing) => thing.update(time));
   thingsToFadeOut = thingsToFadeOut.filter((thing) => thing.alpha > 0.0);
   draw(time);
 }
@@ -267,9 +284,9 @@ function draw(time) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   updateHeatBar();
+  thingsToFadeOut.forEach((thing) => thing.draw(time));
   scenary.forEach((drawable) => drawable.draw(time));
   game.drawables.forEach((drawable) => drawable.draw(time));
-  thingsToFadeOut.forEach((thing) => thing.draw(time));
 }
 
 // TODO: Consider space partioning to make this faster
@@ -343,9 +360,9 @@ function unprojectPoint(point, z = 0) {
 function startGame() {
   gameOver = false;
   thingsToFadeOut = game.drawables.filter((drawable) => drawable.type === "missile");
-  console.log("START", thingsToFadeOut)
+  thingsToFadeOut.forEach((thing) => thing.dead = true);
   game.drawables = [...domes];
-  wave = 1;
+  wave = 0;
   waveStartTime = null;
   waveOn = false;
   waveDuration = 5000;
@@ -355,8 +372,6 @@ function startGame() {
   waveNumBadMissilesRemaining = null;
   domes.forEach(dome => dome.reset());
   hideText(1000);
-  displayWaveNum(3100);
-  generateWave();
   startWave();
 }
 

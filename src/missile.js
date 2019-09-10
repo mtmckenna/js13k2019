@@ -37,7 +37,7 @@ export default class Missile {
     uvBuffer = gl.createBuffer();
   }
 
-  constructor(game, launchTime, position, destination, good, speed) {
+  constructor(game, launchTime, position, destination, good, speed, isBackground = false) {
     this.type = "missile";
     this.game = game;
     this.gl = this.game.gl;
@@ -47,13 +47,14 @@ export default class Missile {
     this.destination = vec3.create();
     this.exploded = false;
     this.dead = false;
+    this.isBackground = isBackground;
     this.collidable = true;
     this.good = good;
     this.goodFloat = good ? 1.0 : 0.0;
     vec3.copy(this.position, position);
     vec3.copy(this.destination, destination);
     const destFromOrigin = vec3.create();
-    this.alpha = 1;
+    this.alpha = this.isBackground ? 0.75 : 1;
     vec3.subtract(destFromOrigin, this.destination, this.position);
     const xDirection = this.destination[0] - this.position[0];
     this.angle = vec3.angle([0, 1, 0], destFromOrigin) * -Math.sign(xDirection);
@@ -71,7 +72,7 @@ export default class Missile {
 
     const distance = vec3.distance(this.destination, this.position);
     mat4.scale(scaleMat, this.modelMatrix, [10, distance, 10]);
-    mat4.translate(transMat, this.modelMatrix, [this.position[0], this.position[1], 0]);
+    mat4.translate(transMat, this.modelMatrix, this.position);
     mat4.rotate(rotMat, this.modelMatrix, this.angle, [0, 0, 1]);
     mat4.multiply(this.modelMatrix, rotMat, scaleMat);
     mat4.multiply(this.modelMatrix, transMat, this.modelMatrix);
@@ -80,6 +81,9 @@ export default class Missile {
 
   update(time) {
     if (time > this.times.end) this.dead = true;
+    // This handles slowly fading out missiles during a game reset
+    if (this.dead) this.alpha -= .01;
+
     if (this.exploded) return;
     this.percentDone = Math.min((time - this.times.start) / (this.times.explode - this.times.start), 1);
     vec3.lerp(this.collisionPosition, this.position, this.destination, this.percentDone);
@@ -103,6 +107,7 @@ export default class Missile {
     gl.uniform1f(program.uniformsCache["uPercentDone"], this.percentDone);
     gl.uniform1f(program.uniformsCache["uAlpha"], this.alpha);
     gl.drawArrays(gl.TRIANGLES, 0, TRAIL.length / 3);
+    gl.disable(gl.DEPTH_TEST);
   }
 
   maybeExplode(time) {

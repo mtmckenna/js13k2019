@@ -75,7 +75,6 @@ export default class Dome {
   reset() {
     this.hitFloat = 0.0;
     this.times = { hit: 0, exploded: 0, death: 0 };
-    this.alpha = 1;
     this.dead = false;
     this.exploded = false;
     this.health = 1;
@@ -118,10 +117,13 @@ export default class Dome {
       }
 
       this.alpha = Math.max(1.0 - (time - this.times.exploded) / DEATH_FADE_TIME, 0.0);
+
       if (this.alpha <= 0) {
         this.dead = true;
         this.buildings.forEach(building => building.dead = true);
       }
+    } else {
+      this.alpha += 0.005;
     }
   }
 

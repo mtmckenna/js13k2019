@@ -26,7 +26,7 @@ const gl = canvas.getContext("webgl", { premultipliedAlpha: true });
 // https://www.khronos.org/webgl/wiki/HandlingContextLost
 canvas.addEventListener("webglcontextlost", (event) => event.preventDefault(), false);
 canvas.addEventListener("webglcontextrestored", () => configurePrograms(gl), false);
-document.body.addEventListener("pointerup", fireMissile, false);
+document.body.addEventListener("mouseup", fireMissile, false);
 document.body.addEventListener("touchend", fireMissile, false);
 
 const textBox = document.createElement("div");
@@ -329,6 +329,7 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
+  console.log('hi')
   if (gameOver) {
     setTimeout(startGame, 1500);
   };
@@ -371,7 +372,7 @@ function startGame() {
   game.drawables = [...domes];
   wave = 0;
   waveStartTime = null;
-  waveOn = false;
+
   waveDuration = 5000;
   waveNumBadMissiles = 1;
   waveMissileTimes = [];
@@ -440,7 +441,7 @@ function resize() {
 
   for (let i = 0; i < numStars; i++) {
     const x = randomFloatBetween(-bounds.width, bounds.width);
-    const y = randomFloatBetween(mountainY, bounds.height);
+    const y = randomFloatBetween(mountainY, bounds.height * 1.5);
     const z = randomFloatBetween(-50, -80);
     const star = new Moon(game, [x, y, z], true);
     scenary.push(star);

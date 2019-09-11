@@ -110,9 +110,11 @@ requestAnimationFrame(update);
 function shakeScreen(amount) {
   const { shakeInfo } = game;
   const { amplitude, dir } = shakeInfo;
+  const heightBonusShake = bounds.height / 10;
   const MAX_AMP = 1;
-  vec3.add(amplitude, amplitude, [amount, amount, amount]);
-  vec3.set(amplitude, Math.min(MAX_AMP, amplitude[0]), Math.min(MAX_AMP, amplitude[1]), Math.min(MAX_AMP, amplitude[2]));
+  const MAX_HEIGHT_AMP = heightBonusShake;
+  vec3.add(amplitude, amplitude, [amount, amount * heightBonusShake, amount]);
+  vec3.set(amplitude, Math.min(MAX_AMP, amplitude[0]), Math.min(MAX_HEIGHT_AMP, amplitude[1]), Math.min(MAX_AMP, amplitude[2]));
   vec3.set(dir, oneOrMinusOne(), oneOrMinusOne(), oneOrMinusOne());
 }
 
@@ -329,11 +331,7 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
-  console.log('hi')
-  if (gameOver) {
-    setTimeout(startGame, 1500);
-  };
-
+  if (gameOver) setTimeout(startGame, 1500);
   if (!missileDome || missileDome.dead || heat <= MIN_HEAT) return;
 
   launchSfx.play();
@@ -372,7 +370,6 @@ function startGame() {
   game.drawables = [...domes];
   wave = 0;
   waveStartTime = null;
-
   waveDuration = 5000;
   waveNumBadMissiles = 1;
   waveMissileTimes = [];

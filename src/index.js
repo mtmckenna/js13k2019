@@ -57,7 +57,8 @@ const BAD_MISSILE_SHAKE_AMOUNT = 3.0;
 const GREEN = [0.2, 0.9, 0.2];
 const BLUE = [0.2, 0.2, 0.9];
 const PURPLE = [0.6, 0.2, 0.8];
-const HEAT_RATE = .2;
+const HEAT_RATE = .35;
+const MIN_HEAT_RATE = 0.05;
 const COOL_RATE = .002;
 const MIN_HEAT = .1;
 const WAVE_DELAY = 2000;
@@ -340,7 +341,8 @@ function fireMissile(event) {
   if (event.touches) touch = event.changedTouches[0];
   const worldCoords = unprojectPoint([touch.clientX, touch.clientY], missileDome.position[2]);
   clickCoords.push([worldCoords[0], worldCoords[1], worldCoords[2]]);
-  heat = Math.max(heat - HEAT_RATE, 0);
+  const heatRate = Math.max(HEAT_RATE - wave * .01, MIN_HEAT_RATE);
+  heat = Math.max(heat - heatRate, 0);
 }
 
 function unprojectPoint(point, z = 0) {

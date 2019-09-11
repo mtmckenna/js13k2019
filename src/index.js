@@ -67,6 +67,7 @@ const badLaunchSfx = new SoundEffect([3,,0.1796,0.2371,0.4295,0.2341,,0.1075,,,,
 const bounds = { width: -1, height: -1 };
 let scenary = [];
 let thingsToFadeOut = [];
+let launchMissiles = [];
 let domes = [];
 let clickCoords = [];
 let missileDome = null;
@@ -217,7 +218,7 @@ function update(time) {
           BG_MISSILE_SPEED,
           true
         );
-        thingsToFadeOut.push(missile);
+        launchMissiles.push(missile); // I wish I could use thingsToFadeOut, but I'm all confused on my z-ordering :/
         badLaunchSfx.play();
       }, launchTime);
     }
@@ -226,6 +227,9 @@ function update(time) {
   scenary.forEach((drawable) => drawable.update(time));
   thingsToFadeOut.forEach((thing) => thing.update(time));
   thingsToFadeOut = thingsToFadeOut.filter((thing) => thing.alpha > 0.0);
+  launchMissiles.forEach((missile) => missile.update(time));
+  launchMissiles = launchMissiles.filter((missile) => missile.alpha > 0.0);
+
   draw(time);
 }
 
@@ -292,8 +296,9 @@ function draw(time) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   updateHeatBar();
-  thingsToFadeOut.forEach((thing) => thing.draw(time));
+  launchMissiles.forEach((thing) => thing.draw(time));
   scenary.forEach((drawable) => drawable.draw(time));
+  thingsToFadeOut.forEach((thing) => thing.draw(time));
   game.drawables.forEach((drawable) => drawable.draw(time));
 }
 

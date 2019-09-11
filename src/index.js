@@ -60,6 +60,7 @@ const PURPLE = [0.6, 0.2, 0.8];
 const HEAT_RATE = .2;
 const COOL_RATE = .002;
 const MIN_HEAT = .1;
+const WAVE_DELAY = 2000;
 const launchSfx = new SoundEffect([0,,0.2322,,0.1669,0.8257,0.0746,-0.3726,,,,,,0.4334,0.1887,,0.0804,-0.1996,1,,,,,0.5]);
 const badLaunchSfx = new SoundEffect([3,,0.1796,0.2371,0.4295,0.2341,,0.1075,,,,-0.4805,0.8129,,,,,,1,,,,,0.5]);
 const bounds = { width: -1, height: -1 };
@@ -72,9 +73,9 @@ let heat = 1.0;
 let gameOver = true;
 let wave = 0;
 let waveStartTime = null;
-let waveOn = false;
+let waveUnpaused = false;
 let waveDuration = 5000;
-let waveNumBadMissiles = 1;
+let waveNumBadMissiles = 2;
 let waveMissileTimes = [];
 let waveBadMissileSpeed = BAD_MISSILE_SPEED;
 let waveNumBadMissilesRemaining = null;
@@ -120,9 +121,9 @@ function shakeScreen(amount) {
 
 function generateWave() {
   waveStartTime = null;
-  waveNumBadMissiles += 2;
+  waveNumBadMissiles += 1;
   waveBadMissileSpeed += 0.00025;
-  waveDuration += 500;
+  waveDuration += 750;
 
   waveMissileTimes = [];
   while (waveMissileTimes.length < waveNumBadMissiles) {
@@ -134,12 +135,12 @@ function generateWave() {
   waveMissileTimes[waveMissileTimes.length - 1] = 0;
 }
 
-function startWave() {
-  waveOn = true;
+function unpauseWave() {
+  waveUnpaused = true;
 }
 
-function stopWave() {
-  waveOn = false;
+function pauseWave() {
+  waveUnpaused = false;
 }
 
 function createDomes() {
@@ -190,15 +191,15 @@ function update(time) {
   checkCollisions(time);
   updateDrawables(time);
 
-  if (waveNumBadMissilesRemaining <= 0 && waveMissileTimes.length === 0 && waveOn) {
-    stopWave();
+  if (waveNumBadMissilesRemaining <= 0 && waveMissileTimes.length === 0 && waveUnpaused) {
+    pauseWave();
     wave++;
     generateWave();
     displayWaveNum(3000);
-    setTimeout(() => startWave(), 2000);
+    setTimeout(() => unpauseWave(), WAVE_DELAY);
     const z = -30;
     const numMissiles = waveMissileTimes.length;
-    const delay = 2000 / numMissiles;
+    const delay = WAVE_DELAY / numMissiles;
     const launchWidth = bounds.width / 2;
     const launchStartX = - launchWidth / 2;
 
@@ -229,12 +230,12 @@ function update(time) {
 
 function endGame() {
   gameOver = true;
-  stopWave();
+  pauseWave();
   displayText("Game Over");
 }
 
 function launchEnemyMissiles(time) {
-  if (!waveOn) return;
+  if (!waveUnpaused) return;
   if (!waveStartTime) waveStartTime = time;
   const timeInWave = time - waveStartTime;
   const nextTime = waveMissileTimes[waveMissileTimes.length - 1];
@@ -331,7 +332,7 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
-  if (gameOver) setTimeout(startGame, 1500);
+  if (gameOver) startGame();
   if (!missileDome || missileDome.dead || heat <= MIN_HEAT) return;
 
   launchSfx.play();
@@ -371,13 +372,13 @@ function startGame() {
   wave = 0;
   waveStartTime = null;
   waveDuration = 5000;
-  waveNumBadMissiles = 1;
+  waveNumBadMissiles = 2;
   waveMissileTimes = [];
   waveBadMissileSpeed = BAD_MISSILE_SPEED;
   waveNumBadMissilesRemaining = null;
   domes.forEach(dome => dome.reset());
   hideText(1000);
-  startWave();
+  setTimeout(unpauseWave, 1500);
 }
 
 function displayWaveNum(delay = 0) {

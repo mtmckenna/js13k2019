@@ -20,7 +20,7 @@ module.exports = {
       {
         inlineSource: ".(js|css)$",
         title: "Infinite Missiles",
-        meta: { viewport: "width=device-width, initial-scale=1" }
+        meta: { viewport: "width=device-width, initial-scale=1, user-scalable=no" }
       }
       ),
     new HtmlWebpackInlineSourcePlugin(),

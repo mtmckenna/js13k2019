@@ -31,6 +31,11 @@ const DAMAGE = 0.003;
 const JITTER = 0.25;
 const DEATH_FADE_TIME = 1000;
 
+let vertexPositionData = [];
+let normalData = [];
+let textureCoordData = [];
+let indexData = [];
+
 let program = null;
 let normalBuffer = null;
 let positionBuffer = null;
@@ -68,7 +73,6 @@ export default class Dome {
     this.hitSfx = new SoundEffect([0,,0.1251,,0.1622,0.12,,,,,,,,0.1687,,,,,1,,,0.1,,0.5]);
 
     this.reset();
-    this.initVertexBuffers();
     this.update();
   }
 
@@ -129,13 +133,12 @@ export default class Dome {
 
   draw(time) {
     const { gl, modelMatrix, normalMatrix } = this;
-    const { normalData, indexData, vertexPositionData } = this;
     const { viewMatrix, projectionMatrix } = this.game;
 
     gl.useProgram(program);
     setNormal(gl, program, normalBuffer, normalData);
     setPosition(gl, program, positionBuffer, vertexPositionData);
-    setUvs(gl, program, uvBuffer, this.textureCoordData);
+    setUvs(gl, program, uvBuffer, textureCoordData);
     configureArrayBuffer(gl, indexBuffer, indexData);
 
     gl.uniform1f(program.uniformsCache["uTime"], time);
@@ -163,14 +166,10 @@ export default class Dome {
     this.times.hit = time;
     this.hitFloat = 1.0;
   }
+}
 
   // https://bl.ocks.org/camargo/649e5903c4584a21a568972d4a2c16d3
-  initVertexBuffers() {
-    const vertexPositionData = [];
-    const normalData = [];
-    const textureCoordData = [];
-    const indexData = [];
-
+function configVertexBuffers() {
     const radius = 0.5;
     const latitudeBands = 15;
     const longitudeBands = 15;
@@ -222,14 +221,14 @@ export default class Dome {
       }
     }
 
-    this.vertexPositionData = new Float32Array(vertexPositionData);
-    this.normalData = new Float32Array(normalData);
-    this.textureCoordData = new Float32Array(textureCoordData);
-    this.indexData = new Uint16Array(indexData);
+    vertexPositionData = new Float32Array(vertexPositionData);
+    normalData = new Float32Array(normalData);
+    textureCoordData = new Float32Array(textureCoordData);
+    indexData = new Uint16Array(indexData);
   }
-}
 
 function configureProgram(gl) {
+  configVertexBuffers();
   return programFromCompiledShadersAndUniformNames(
     gl,
     VERTEX_SHADER,

@@ -15,6 +15,11 @@ export function configureBuffer(gl, program, buffer, data, elemPerVertex, attrib
   gl.enableVertexAttribArray(attributeLocation);
 }
 
+export function configureArrayBuffer(gl, buffer, indices) {
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffer);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+}
+
 function cacheUniformLocations(gl, program, uniformNames) {
   uniformNames.forEach(function (uniformName) {
     cacheUniformLocation(gl, program, uniformName);

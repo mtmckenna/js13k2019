@@ -17,7 +17,6 @@ varying vec2 vUvs;
 
 void main() {
   highp vec4 transformedNormal = normalMatrix * vec4(normalize(aNormal), 1.0);
-
   highp vec4 eyeCoords = viewMatrix * modelMatrix * vec4(aPosition, 1.0);
   highp vec3 s = normalize(vec3(uLightPosition - eyeCoords));
 

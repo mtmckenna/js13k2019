@@ -1,5 +1,6 @@
 import { mat4 } from "./lib/gl-matrix";
 import {
+  configureArrayBuffer,
   programFromCompiledShadersAndUniformNames,
   setPosition,
   setUvs,
@@ -79,9 +80,7 @@ export default class Cube {
     if (this.building) setNormal(gl, program, normalBuffer, CUBE_NORMALS);
     setPosition(gl, program, positionBuffer, CUBE);
     setUvs(gl, program, uvBuffer, CUBE_UVS);
-
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, CUBE_INDICES, gl.STATIC_DRAW);
+    configureArrayBuffer(gl, indexBuffer, CUBE_INDICES);
 
     gl.uniform1f(program.uniformsCache["uDead"], this.dead ? 1.0 : 0.0);
     gl.uniform3f(program.uniformsCache["uDimensions"], ...this.dimensions);

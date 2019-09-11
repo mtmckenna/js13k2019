@@ -1,5 +1,6 @@
 import { mat4, vec3 } from "./lib/gl-matrix";
 import {
+  configureArrayBuffer,
   randomFloatBetween,
   programFromCompiledShadersAndUniformNames,
   setNormal,
@@ -135,8 +136,7 @@ export default class Dome {
     setNormal(gl, program, normalBuffer, normalData);
     setPosition(gl, program, positionBuffer, vertexPositionData);
     setUvs(gl, program, uvBuffer, this.textureCoordData);
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indexData, gl.STATIC_DRAW);
+    configureArrayBuffer(gl, indexBuffer, indexData);
 
     gl.uniform1f(program.uniformsCache["uTime"], time);
     gl.uniform1f(program.uniformsCache["uAlpha"], this.alpha);

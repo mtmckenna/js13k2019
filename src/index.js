@@ -410,7 +410,10 @@ function resize() {
   if ((dimensions[0] === width && dimensions[1] === height)) return;
   window.scrollTo(0, 0);
   gl.viewport(0, 0, width, height);
+
+  resetProjectionMatrix();
   resetCamera();
+
   dimensions[0] = width;
   dimensions[1] = height;
 
@@ -498,7 +501,6 @@ function resize() {
 }
 
 function resetMatrices() {
-  resetProjectionMatrix();
   resetViewMatrix();
   mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
   mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);

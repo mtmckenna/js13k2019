@@ -6,6 +6,7 @@
   font-family: Verdana, Geneva, sans-serif;
   -moz-user-select: none;
   user-select: none;
+  image-rendering: crisp-edges;
 }
 
 body {

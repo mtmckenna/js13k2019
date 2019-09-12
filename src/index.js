@@ -479,7 +479,7 @@ function resize() {
 
   // Reset ground
   const groundDepth = mountainZ;
-  const ground = new Cube(game, [0, -1, 0], [2 * bounds.width, 1, groundDepth]);
+  const ground = new Cube(game, [0, -2, 0], [2 * bounds.width, 1, groundDepth]);
   scenary.push(ground);
 
   // Add buildings

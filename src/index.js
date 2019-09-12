@@ -545,7 +545,7 @@ function hideText(delay = 0) {
 function updateHeatBar() {
   const greenWidth = `${heat * 100}%`;
   const redWidth = `${(1 - heat) * 100}%`;
-  heatBox.style.background = `linear-gradient(to right, rgb(0, 115, 115) ${greenWidth}, rgb(200, 35, 106) ${greenWidth} ${redWidth})`;
+  heatBox.style.background = `linear-gradient(to right, rgb(17, 127, 127) ${greenWidth}, rgb(200, 90, 90) ${greenWidth} ${redWidth})`;
 
 }
 

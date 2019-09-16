@@ -34,14 +34,10 @@ export default class Moon {
     this.position = position;
     this.dead = false;
     this.collidable = false;
-    this.starFloat = star ? 1.0 : 0.0;
+    this.starFloat = 0.0;
     this.modelMatrix = mat4.create();
-    this.radius = star ? 0.20 : 1.0;
+    this.radius = 1.0;
     this.update(0);
-
-    // first seed determines opacity of star
-    // second seed determines if star twinkles
-    this.seed = [randomFloatBetween(0, 0.3), Math.round(randomFloatBetween(0, 0.75))];
   }
 
   update(time) {
@@ -60,7 +56,6 @@ export default class Moon {
     setUvs(gl, program, uvBuffer, QUAD_UVS);
     gl.uniform1f(program.uniformsCache["uTime"], time);
     gl.uniform1f(program.uniformsCache["uStar"], this.starFloat);
-    gl.uniform2f(program.uniformsCache["uSeed"], this.seed[0], this.seed[1]);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);

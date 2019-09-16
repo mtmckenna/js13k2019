@@ -12,6 +12,7 @@ import Explosion from "./explosion";
 import Missile from "./missile";
 import Moon from "./moon";
 import Mountains from "./mountains";
+import Stars from "./stars";
 import Cube from "./cube";
 
 import "./index.css";
@@ -444,16 +445,19 @@ function resize() {
   scenary = [];
 
   // Reset stars
-  let numStars = 200;
+  let numStars = 150;
   const mountainY = bounds.height * .2;
+  const starPos = [];
 
   for (let i = 0; i < numStars; i++) {
     const x = randomFloatBetween(-bounds.width, bounds.width);
     const y = randomFloatBetween(mountainY, bounds.height * 1.5);
-    const z = randomFloatBetween(-50, -80);
-    const star = new Moon(game, [x, y, z], true);
-    scenary.push(star);
+    const z = randomFloatBetween(-80, -95);
+    starPos.push([x, y, z]);
   }
+
+  const stars = new Stars(game, [0, 0, 0], starPos)
+  scenary.push(stars);
 
   // Place moon
   const moon = new Moon(game, [0, 0, 0]);
@@ -529,6 +533,7 @@ function configurePrograms(gl) {
   Moon.configureProgram(gl);
   Mountains.configureProgram(gl);
   Cube.configureProgram(gl);
+  Stars.configureProgram(gl);
 }
 
 function displayText(text, delay = 0) {

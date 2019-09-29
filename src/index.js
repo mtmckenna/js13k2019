@@ -82,6 +82,7 @@ let waveNumBadMissiles = 2;
 let waveMissileTimes = [];
 let waveBadMissileSpeed = BAD_MISSILE_SPEED;
 let waveNumBadMissilesRemaining = null;
+let lastClickTime = performance.now();
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
@@ -339,6 +340,12 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
+  if (performance.now() - lastClickTime < 50) {
+    return;
+  } else {
+    lastClickTime = performance.now();
+  }
+
   if (gameOver) startGame();
   if (!missileDome || missileDome.dead || heat <= MIN_HEAT) return;
 

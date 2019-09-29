@@ -3,7 +3,6 @@ import {
   programFromCompiledShadersAndUniformNames,
   setPosition,
   setUvs,
-  randomFloatBetween,
 } from "./webgl-helpers";
 
 import VERTEX_SHADER from "./shaders/vertex.glsl";
@@ -50,7 +49,7 @@ export default class Moon {
 
   draw(time) {
     const { gl, modelMatrix } = this;
-    const { viewMatrix, projectionMatrix } = this.game;
+    const { viewMatrix, projMat } = this.game;
     gl.useProgram(program);
     setPosition(gl, program, positionBuffer, QUAD);
     setUvs(gl, program, uvBuffer, QUAD_UVS);
@@ -58,7 +57,7 @@ export default class Moon {
     gl.uniform1f(program.uniformsCache["uStar"], this.starFloat);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
-    gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
+    gl.uniformMatrix4fv(program.uniformsCache["projMat"], false, projMat);
     gl.drawArrays(gl.TRIANGLES, 0, QUAD.length / 3);
   }
 }

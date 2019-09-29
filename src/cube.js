@@ -74,7 +74,7 @@ export default class Cube {
 
   draw(time) {
     const { gl, modelMatrix, normalMatrix, program } = this;
-    const { viewMatrix, projectionMatrix } = this.game;
+    const { viewMatrix, projMat } = this.game;
     gl.useProgram(program);
 
     if (this.building) setNormal(gl, program, normalBuffer, CUBE_NORMALS);
@@ -90,7 +90,7 @@ export default class Cube {
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
-    gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
+    gl.uniformMatrix4fv(program.uniformsCache["projMat"], false, projMat);
 
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);

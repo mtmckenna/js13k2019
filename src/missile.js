@@ -91,7 +91,7 @@ export default class Missile {
 
   draw(time) {
     const { gl, modelMatrix, goodFloat } = this;
-    const { viewMatrix, projectionMatrix } = this.game;
+    const { viewMatrix, projMat } = this.game;
 
     gl.useProgram(program);
     setPosition(gl, program, positionBuffer, TRAIL);
@@ -100,7 +100,7 @@ export default class Missile {
     gl.uniform1f(program.uniformsCache["uGood"], goodFloat);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
-    gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
+    gl.uniformMatrix4fv(program.uniformsCache["projMat"], false, projMat);
     gl.uniform1f(program.uniformsCache["uExplodeTime"], this.times.explode);
     gl.uniform1f(program.uniformsCache["uStartTime"], this.times.start);
     gl.uniform1f(program.uniformsCache["uEndTime"], this.times.end);

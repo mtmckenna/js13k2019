@@ -84,7 +84,7 @@ export default class Stars {
 
   draw(time) {
     const { gl, modelMatrix } = this;
-    const { viewMatrix, projectionMatrix } = this.game;
+    const { viewMatrix, projMat } = this.game;
     gl.useProgram(program);
     setPosition(gl, program, positionBuffer, this.positions);
     setUvs(gl, program, uvBuffer, this.uvs);
@@ -93,7 +93,7 @@ export default class Stars {
     gl.uniform1f(program.uniformsCache["uStar"], this.starFloat);
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
-    gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
+    gl.uniformMatrix4fv(program.uniformsCache["projMat"], false, projMat);
     gl.drawArrays(gl.TRIANGLES, 0, this.positions.length / 3);
   }
 }

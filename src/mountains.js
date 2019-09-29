@@ -61,7 +61,7 @@ export default class Mountains {
 
   draw(time) {
     const { gl, modelMatrix, normalMatrix, color, vertexData, normalData } = this;
-    const { viewMatrix, projectionMatrix } = this.game;
+    const { viewMatrix, projMat } = this.game;
     gl.useProgram(program);
     setPosition(gl, program, positionBuffer, vertexData);
     setNormal(gl, program, normalBuffer, normalData);
@@ -72,7 +72,7 @@ export default class Mountains {
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
-    gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
+    gl.uniformMatrix4fv(program.uniformsCache["projMat"], false, projMat);
 
     gl.drawArrays(gl.TRIANGLES, 0, vertexData.length / 3);
   }

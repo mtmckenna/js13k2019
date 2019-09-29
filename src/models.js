@@ -142,7 +142,7 @@ const QUAD_UVS = new Float32Array([0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1]);
 const UNIFORM_NAMES = [
   "modelMatrix",
   "viewMatrix",
-  "projectionMatrix",
+  "projMat",
   "uTime",
 ];
 

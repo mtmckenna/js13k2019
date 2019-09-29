@@ -9,7 +9,7 @@ uniform vec3 uKd;
 uniform vec3 uLd;
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
+uniform mat4 projMat;
 uniform mat4 normalMatrix;
 
 varying vec3 vLightIntensity;
@@ -22,5 +22,5 @@ void main() {
 
   vLightIntensity = 6.4 * uLd * uKd * max(dot(s, transformedNormal.xyz), 0.0);
   vUvs = aUvs;
-  gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
+  gl_Position = projMat * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
 }

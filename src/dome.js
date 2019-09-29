@@ -133,7 +133,7 @@ export default class Dome {
 
   draw(time) {
     const { gl, modelMatrix, normalMatrix } = this;
-    const { viewMatrix, projectionMatrix } = this.game;
+    const { viewMatrix, projMat } = this.game;
 
     gl.useProgram(program);
     setNormal(gl, program, normalBuffer, normalData);
@@ -148,7 +148,7 @@ export default class Dome {
     gl.uniformMatrix4fv(program.uniformsCache["modelMatrix"], false, modelMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["viewMatrix"], false, viewMatrix);
     gl.uniformMatrix4fv(program.uniformsCache["normalMatrix"], false, normalMatrix);
-    gl.uniformMatrix4fv(program.uniformsCache["projectionMatrix"], false, projectionMatrix);
+    gl.uniformMatrix4fv(program.uniformsCache["projMat"], false, projMat);
     gl.uniform4fv(program.uniformsCache["uLightPosition"], [50, 200, -100, 1.0]);
 
     gl.uniform3fv(program.uniformsCache["uKd"], this.color);

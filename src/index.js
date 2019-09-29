@@ -47,9 +47,9 @@ const nearPlane = 0.1 + EPSILON;
 const farPlane = 400.0;
 const fov = 15 * Math.PI / 180;
 const viewMatrix = mat4.create();
-const projectionMatrix = mat4.create();
-const viewProjectionMatrix = mat4.create();
-const inverseViewProjectionMatrix = mat4.create();
+const projMat = mat4.create();
+const viewprojMat = mat4.create();
+const inverseViewprojMat = mat4.create();
 const GOOD_MISSILE_SPEED = 0.02;
 const BAD_MISSILE_SPEED  = 0.0020;
 const BG_MISSILE_SPEED = 0.025;
@@ -86,9 +86,9 @@ let lastClickTime = performance.now();
 
 game.gl = gl;
 game.viewMatrix = viewMatrix;
-game.projectionMatrix = projectionMatrix;
-game.viewProjectionMatrix = viewProjectionMatrix;
-game.inverseViewProjectionMatrix = inverseViewProjectionMatrix;
+game.projMat = projMat;
+game.viewprojMat = viewprojMat;
+game.inverseViewprojMat = inverseViewprojMat;
 game.drawables = [];
 
 
@@ -367,7 +367,7 @@ function unprojectPoint(point, z = 0) {
   const coords = [x, y, 0];
   const worldCoords = vec3.create();
 
-  vec3.transformMat4(worldCoords, coords, inverseViewProjectionMatrix);
+  vec3.transformMat4(worldCoords, coords, inverseViewprojMat);
   vec3.subtract(worldCoords, worldCoords, cameraPos);
   vec3.normalize(worldCoords, worldCoords);
   const distance = (z - cameraPos[2]) / worldCoords[2];
@@ -424,7 +424,7 @@ function resize() {
   window.scrollTo(0, 0);
   gl.viewport(0, 0, width, height);
 
-  resetProjectionMatrix();
+  resetprojMat();
   resetCamera();
 
   dimensions[0] = width;
@@ -518,8 +518,8 @@ function resize() {
 
 function resetMatrices() {
   resetViewMatrix();
-  mat4.multiply(viewProjectionMatrix, projectionMatrix, viewMatrix);
-  mat4.invert(inverseViewProjectionMatrix, viewProjectionMatrix);
+  mat4.multiply(viewprojMat, projMat, viewMatrix);
+  mat4.invert(inverseViewprojMat, viewprojMat);
 }
 
 function resetViewMatrix() {
@@ -527,10 +527,10 @@ function resetViewMatrix() {
   mat4.lookAt(viewMatrix, cameraPos, lookAtPos, [0.0, 1.0, 0.0]);
 }
 
-function resetProjectionMatrix() {
-  mat4.identity(projectionMatrix);
+function resetprojMat() {
+  mat4.identity(projMat);
   const aspectRatio = canvas.clientWidth / canvas.clientHeight;
-  mat4.perspective(projectionMatrix, fov, aspectRatio, nearPlane, farPlane);
+  mat4.perspective(projMat, fov, aspectRatio, nearPlane, farPlane);
 }
 
 function configurePrograms(gl) {

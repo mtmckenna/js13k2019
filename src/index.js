@@ -340,7 +340,7 @@ function checkCollisions(time) {
 
 // https://stackoverflow.com/questions/13055214/mouse-canvas-x-y-to-three-js-world-x-y-z
 function fireMissile(event) {
-  if (performance.now() - lastClickTime < 50) {
+  if (performance.now() - lastClickTime < 100) {
     return;
   } else {
     lastClickTime = performance.now();
